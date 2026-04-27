@@ -1,0 +1,131 @@
+╔══════════════════════════════════════════════════════════════╗
+║              PYTHON API EXCEPTIONS — QUICK REFERENCE         ║
+╚══════════════════════════════════════════════════════════════╝
+
+FORMAT PER ENTRY
+  Catch  →  exact class to put in except clause
+  When   →  what triggers it
+  Hint   →  likely cause / quick fix
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+1. NETWORK-LEVEL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+ConnectionError
+  Catch  →  requests.exceptions.ConnectionError
+  When   →  DNS failure, connection refused, server unreachable
+  Hint   →  wrong base URL / service down / firewall or VPC block
+
+Timeout
+  Catch  →  requests.exceptions.Timeout
+  When   →  API did not respond within the timeout window
+  Hint   →  increase timeout= / check connect vs read timeout separately
+
+TooManyRedirects
+  Catch  →  requests.exceptions.TooManyRedirects
+  When   →  API keeps redirecting in a loop
+  Hint   →  misconfigured endpoint or wrong protocol (http vs https)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+2. HTTP STATUS ERRORS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+HTTPError
+  Catch  →  requests.exceptions.HTTPError
+  When   →  response.raise_for_status() called on a 4xx or 5xx response
+  Hint   →  401/403 = auth problem  |  404 = wrong endpoint  |  500 = server bug
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+3. DATA HANDLING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+JSONDecodeError
+  Catch  →  json.JSONDecodeError  (or ValueError — it is a subclass)
+  When   →  response.json() called but body is not valid JSON
+  Hint   →  server returned HTML error page / empty body / malformed JSON
+
+KeyError
+  Catch  →  KeyError
+  When   →  accessing dict key that does not exist  e.g. data["user"]["name"]
+  Hint   →  use .get("key") for optional fields  |  log the raw response first
+
+TypeError
+  Catch  →  TypeError
+  When   →  wrong operation on a data type  e.g. data["user"][0] but user is a dict
+  Hint   →  print(type(data)) to verify structure before indexing
+
+ValueError
+  Catch  →  ValueError
+  When   →  invalid conversion  e.g. int("abc")  |  also raised by response.json()
+  Hint   →  validate input before converting  |  check API response format
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+4. AUTHENTICATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  Usually surfaces as HTTPError (401 Unauthorized / 403 Forbidden)
+  But can also appear as:
+
+  ValueError   →  token parsing failed
+  KeyError     →  env variable not set  e.g. os.getenv() returned None then indexed
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+5. FILE / IO
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+FileNotFoundError
+  Catch  →  FileNotFoundError
+  When   →  open() on a path that does not exist
+  Hint   →  check path with os.path.exists() before opening
+
+IOError / OSError
+  Catch  →  OSError  (IOError is an alias)
+  When   →  disk read/write fails
+  Hint   →  check permissions / disk space
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+6. SSL / SECURITY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+SSLError
+  Catch  →  requests.exceptions.SSLError
+  When   →  invalid or expired SSL certificate
+  Hint   →  never use verify=False in production  |  update CA bundle
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+7. URL CONSTRUCTION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+InvalidURL
+  Catch  →  requests.exceptions.InvalidURL
+  When   →  URL is malformed
+  Hint   →  validate URL format before passing to requests
+
+MissingSchema
+  Catch  →  requests.exceptions.MissingSchema
+  When   →  URL has no scheme  e.g. requests.get("google.com")
+  Hint   →  always prefix with https://
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+8. CUSTOM EXCEPTIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  Define your own for domain-specific failures:
+
+    class APIError(Exception):
+        pass
+
+  Raise it when:  API returns unexpected shape / business logic fails
+  Avoids:         swallowing errors silently with bare except
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+RECOMMENDED CATCH ORDER (most specific → most general)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  except requests.exceptions.HTTPError       as e:   # 4xx / 5xx
+  except requests.exceptions.ConnectionError as e:   # network unreachable
+  except requests.exceptions.Timeout         as e:   # no response in time
+  except requests.exceptions.RequestException as e:  # catch-all for requests
+  except json.JSONDecodeError                as e:   # bad response body
+  except (KeyError, TypeError, ValueError)   as e:   # data shape issues
+  except Exception                           as e:   # last resort — log & re-raise

@@ -1,0 +1,132 @@
+📄 Project: Google Sheets Data Sync API Integration
+🧾 Client Scenario
+A small business uses Google Sheets to track leads. They want automation to sync this data with an internal system via APIs.
+Name on Github - “Automated data synchronization system between Google Sheets and external APIs with retry handling, logging, and deployment support”
+🎯 Objective
+Build a Python-based integration service that:
+    Authenticates using OAuth 2.0 - DONE
+    Reads data from Google Sheets - DONE
+    Processes/transforms it - DONE
+    Sends it to a mock external API - DONE
+    Handles failures, retries, and logging
+
+🧩 Functional Requirements
+
+1. OAuth 2.0 Authentication - DONE
+Use OAuth 2.0 to:
+    Authenticate user via Google
+    Store access + refresh tokens
+    Automatically refresh expired tokens
+👉 Constraint: DONE
+    No manual token copy-paste after first run
+    Must persist tokens (file/db)
+
+2. Read Data from Google Sheets - DONE
+Use Google Sheets API
+    Read rows from a sheet like:
+Name	Email	    Status
+A	    a@mail.com  NEW
+
+👉 Requirements: - NOT DONE
+    Handle pagination (large sheets)
+    Validate schema (no missing fields)
+
+3. Data Transformation - DONE
+Before sending:
+Convert:
+    Name → full_name
+    Email → lowercase
+Filter:
+    Only Status = NEW
+
+4. Send to External API - DONE
+
+Simulate sending to:
+https://reqres.in/api/users  OR mock server
+
+Use:
+    POST requests
+    JSON payload
+        Responsibilities:
+            send_single_lead(payload)
+            send_batch_leads(list_of_payloads)
+            retry logic
+            error logging
+👉 Requirements: - DONE
+    Retry on failure (429, 500)
+    Timeout handling
+    Proper error logging
+
+5. Logging & Observability - DONE
+Log:
+    API requests/responses - DONE
+    Failures - DONE
+    Token refresh events - DONE
+Use structured logging (JSON preferred) - DONE
+
+6. CLI Interface - LEFT (need to learn subParsers for this)
+Command examples:
+    python app.py sync
+    python app.py sync --dry-run
+    python app.py status
+
+🧱 Non-Functional Requirements
+Code Structure - DONE
+project/
+│── auth/
+│   └── oauth.py
+│── sheets/
+│   └── reader.py
+│── api/
+│   └── client.py
+│── utils/
+│   └── logger.py
+│── main.py
+│── config.yaml
+
+Must Use
+    Python
+    requests or httpx
+    .env for secrets
+
+⚠️ Edge Cases (Important — this is where real learning happens)
+You must handle: - DONE
+    Expired access token → refresh automatically
+    API rate limiting → exponential backoff
+    Partial failure (some rows fail)
+    Empty sheet
+    Invalid email format
+
+🧪 Bonus (Makes you freelance-ready)
+Add these:
+1. Webhook Mode 
+Instead of CLI:
+    Expose endpoint using FastAPI
+    Trigger sync via HTTP call
+2. Scheduler
+    Run every 10 mins (cron or APScheduler)
+3. Dockerize
+    Containerize the app
+    Add environment configs
+4. Config-driven Mapping
+Instead of hardcoding:
+    mapping:
+    Name: full_name
+    Email: email
+
+📦 Deliverables (Like a real client expects)
+GitHub repo
+README with:
+    Setup steps
+    oauth setup guide
+.env.example
+Sample logs
+Demo video (optional but powerful for Upwork)
+
+🧠 What You’ll Actually Learn
+This project forces you to understand:
+    OAuth flow deeply (not just theory)
+    Token lifecycle (critical in real jobs)
+    API reliability patterns
+    Data pipelines (light version)
+    Modular Python design

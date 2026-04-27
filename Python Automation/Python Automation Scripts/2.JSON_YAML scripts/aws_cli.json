@@ -1,0 +1,23 @@
+{
+  "Reservations": [
+    {
+      "Instances": [
+        {
+          "InstanceId": "i-0123456789aaa1111",
+          "InstanceType": "t3.micro",
+          "State": { "Name": "running" }
+        },
+        {
+          "InstanceId": "i-0b23456789bbb2222",
+          "InstanceType": "t3.small",
+          "State": { "Name": "stopped" }
+        },
+        {
+          "InstanceId": "i-0c34567899ccc3333",
+          "InstanceType": "t3.medium",
+          "State": { "Name": "running" }
+        }
+      ]
+    }
+  ]
+}

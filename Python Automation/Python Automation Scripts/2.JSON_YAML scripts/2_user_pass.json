@@ -1,0 +1,29 @@
+    [[
+    {
+        "username": "alice",
+        "password_expires_at": "2024-06-01"
+    },
+    {
+        "username": "bob",
+        "password_expires_at": "2026-01-15"
+    },
+    {
+        "username": "carol",
+        "password_expires_at": "2023-12-31"
+    }
+    ],
+    [
+    {
+        "username": "john",
+        "password_set_at": "2025-11-15"
+    },
+    {
+        "username": "dylan",
+        "password_set_at": "2025-10-15"
+    },
+    {
+        "username": "mary",
+        "password_set_at": "2025-12-14"
+    }
+    ]
+]

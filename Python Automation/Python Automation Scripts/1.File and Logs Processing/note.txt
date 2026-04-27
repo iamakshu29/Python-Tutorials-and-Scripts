@@ -1,0 +1,16 @@
+The all searching pattern can be done with split() patterns as well as regex patterns.
+1. Parse a log file and extract all unique IP addresses.
+2. From an Nginx access log, print the top 5 URLs by request count.
+3. Given a log file, find all requests slower than 200 ms.
+4. Count how many times each error code (400/403/404/500) appears.
+5. Stream a huge log file and detect if the same user appears more than N times in a minute.
+
+But when to use what pattern?
+It is depend on the complexity of the log format and requirement of task.
+- For simple log formats with consistent delimiters, split() patterns are faster and easier to implement.
+- For complex log formats with varying delimiters or when needing to extract specific patterns, regex patterns are more powerful and flexible.
+- For performance-critical applications, split() patterns may be preferred due to their speed.
+- For tasks requiring pattern matching, validation, or extraction of complex data, regex patterns are more suitable.
+
+If log is immutable and performance is critical, split() patterns are better.
+If log format is complex and requires pattern matching, regex patterns are better.

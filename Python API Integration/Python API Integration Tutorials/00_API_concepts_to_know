@@ -1,0 +1,76 @@
+Structure the Code
+- Def Different Function for each process
+- Example - config log, adding conteet to file, retrieve existing content, send headers, api_calling
+
+Authentication Logics
+- Token or api_key used in headers or params
+- OAuth logic to add
+    - Authenticate user via Google or other
+    - Store access + refresh tokens
+    - Automatically refresh expired tokens
+    - No manual token copy-paste after first run
+    - No permission access everytime you run the script - just once
+    - Must persist tokens (file/db)
+
+Add logging to your current script
+- Understand, Why: print() is useless in real systems
+
+Add timeout (critical for APIs)
+A timeout in an API call defines how long your program is willing to wait for a response before giving up. 
+- Why: A timeout sets an upper limit on that waiting period. If the limit is exceeded, Python raises an exception instead of hanging indefinitely.
+
+Improve error handling, Add email Alerting
+- Handle different failures differently
+- Learn proper structure:
+
+File Handling
+- Save response to file
+- Make it consistent
+
+Rate Limiting (API reality)
+- Why: APIs throttle you
+- Learn APIs return headers like: res.headers["X-RateLimit-Remaining"]
+
+Handle Pagination
+Single Payload or Batch Payload
+
+Add CLI (--output) - This is what makes scripts reusable.
+- Learn argparse
+- Script becomes configurable
+- Learn subParsers also for proper company like code. (-sync --dry-run, -status)
+
+Modular Structure
+- Split files logically (main.py, api.py, logger.py, utils/app.log)
+- Learn concept of import other .py
+
+Add retry logic (Advanced)
+Add logic for how many times the func should retry calling the API before return None or exception and Log each retry also
+- Why: transient failures happen
+Add Idempotency
+If API retries → duplicate entries
+Solution
+    Add unique identifier per record
+    Prevent re-sending same data
+
+Scheduling / automation
+- Cron Jobs
+
+Deployment
+- From local to EC2 or Docker
+
+Use Webhooks
+
+Use Async feature or logic
+Use httpx - Built for concurrency using async I/O (via asyncio or trio), allowing thousands of requests efficiently.
+
+Use DB to store processed records
+Track:
+    last synced row
+    processed IDs
+
+Once you complete this:
+You can do:
+- API automation scripts (Upwork-ready)
+- Data fetching tools
+- Monitoring scripts
+- Integration glue code (high demand)

@@ -1,0 +1,30 @@
+CLI Commands — Explained
+No, sync, status, and --dry-run are NOT predefined keywords. They are just names you choose when using argparse subcommands. You could call them run, check, pizza — anything. The requirement doc chose these names because they're industry conventions that users expect.
+
+What each one means:
+python main.py sync
+"Do the actual work." This is what your main() already does:
+
+Authenticate via OAuth
+Read from Google Sheets
+Transform data
+Send to the external API
+Right now your app does this by default. With CLI commands, it only does this when the user explicitly says sync.
+
+python main.py sync --dry-run
+"Show me what WOULD happen, but don't actually do it." This is a safety feature:
+
+Authenticate ✅
+Read from Sheets ✅
+Transform data ✅
+Print the leads that would be sent ✅
+❌ Do NOT actually call send_data() — skip the POST
+Think of it like a preview. Very common in real tools (e.g., git clean --dry-run shows what files would be deleted without deleting them).
+
+python main.py status
+"Show me the current state." Quick health check:
+
+Is token.json present? Is it expired?
+When was the last sync? (from logs)
+How many leads were sent last time?
+No data fetching, no sending — just a status report.

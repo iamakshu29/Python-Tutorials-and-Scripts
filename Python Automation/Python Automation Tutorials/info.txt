@@ -1,0 +1,42 @@
+https://github.com/iam-veeramalla/python-for-devops.git
+
+>> Why Python over Shell scripting?
+As to do scripting tasks on windows and macOS, Python is preferred over shell scripting for many reasons:
+1. Python is cross-platofrm whereas shell scripting is limited to linux 
+2. Python has vast standard libraries and modules which makes it easier to perform complex tasks.
+3. better readability as compare to shell scripts.
+4. When to interact with web services and APIs and data manipulation, Python is better than shell.
+
+>> Then how we can use Powershell on windows and macOs when shell is limited to linux?
+Powershell is indeed a powerfull shell scripting lang but not widely adopted and Python is preferred over it.
+
+------------------------------------
+Virtual Environments in Python :-
+Virtual environments are a way to create isolated Python environments for different projects. This allows you to manage dependencies and packages for each project separately, avoiding conflicts between them.
+To create a Virtual Environment, you can use the module venv.
+>> pip install virtualenv
+>> python -m venv myenv
+>> source myenv/bin/activate   # On Windows use `myenv\Scripts\activate`
+>> deactivate   # To exit the virtual environment
+
+Now you can install packages using pip and they will be isolated to this environment only.
+Useful when different projects require different versions of the same package.
+
+------------------------------------
+Type of inputs in Python :-
+
+1. argv method :-
+import sys 
+sys.argv[1]
+- In Python, sys.argv is a list in the sys module that contains the command-line arguments passed to the script. sys.argv[0] is the name of the script itself, and sys.argv[1] is the first argument passed to the script.
+- It executes at the time of script execution.
+For example :
+>> python index.py arg1 arg2
+
+2. input function :-
+- In Python, the input() function is used to take input from the user. When this function is called, the program will pause and wait for the user to type something and press Enter. The input provided by the user is then returned as a string.
+- It executes at runtime.
+For example :
+>> name = input("Enter your name: ")
+
+----------------------------------------------

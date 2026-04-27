@@ -1,0 +1,17 @@
+Regex Module
+1. re.search(): Searches for a pattern within a string and returns a match object if found.
+2. re.match(): Checks for a match only at the beginning of the string.
+3. re.findall(): Returns a list of all non-overlapping matches of a pattern in a string. (useful for extracting multiple occurrences)
+4. re.sub(): Replaces occurrences of a pattern with a specified replacement string.
+5. re.compile(): Compiles a regex pattern into a regex object for faster reuse.
+6. re.validate(): Validates if a string matches a specific regex pattern (custom implementation needed).
+
+# NOTE:
+for regex related questions, use the conditons like: for not matched a pattern
+duration_match = re.search(duration_regex, line)
+if not duration_match:
+    continue
+
+req_match = re.search(req_regex, line)
+    if not req_match:
+        continue

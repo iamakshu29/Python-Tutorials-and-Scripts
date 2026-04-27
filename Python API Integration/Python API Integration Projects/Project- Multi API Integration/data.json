@@ -1,0 +1,54 @@
+{
+    "developer": {
+        "username": "LondheShubham153",
+        "public_repos": 181,
+        "top_10_repos": [
+            {
+                "name": "aws-zero-to-hero",
+                "stars": 145
+            },
+            {
+                "name": "argocd-in-one-shot",
+                "stars": 60
+            },
+            {
+                "name": "aws-devops",
+                "stars": 35
+            },
+            {
+                "name": "90DaysOfDevOps",
+                "stars": 32
+            },
+            {
+                "name": "argocd-demos",
+                "stars": 31
+            },
+            {
+                "name": "BashBlaze-7-Days-of-Bash-Scripting-Challenge",
+                "stars": 29
+            },
+            {
+                "name": "aws-node-http-api-project",
+                "stars": 26
+            },
+            {
+                "name": "aws-eks-devops-best-practices",
+                "stars": 25
+            },
+            {
+                "name": "AWS-DevOps-Project",
+                "stars": 24
+            },
+            {
+                "name": "ansible-project",
+                "stars": 21
+            }
+        ]
+    },
+    "location_weather": {
+        "city": "Delhi",
+        "temperature": 38.05,
+        "condition": "clear sky"
+    },
+    "insight": "High temperature, consider indoor work"
+}
