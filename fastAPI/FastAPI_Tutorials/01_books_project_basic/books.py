@@ -24,11 +24,11 @@ async def read_all_books():
 
 # %20 means space -> title%20one = title one
 # explain below function also ..how id goes from path -> func args -> return value
-@app.get("/books/id/{id}")
-async def get_book_by_id(id: int):
-    if id < 0 or id >= len(books):
+@app.get("/books/id/{book_id}")
+async def get_book_by_id(book_id: int):
+    if book_id < 0 or book_id >= len(books):
         raise HTTPException(status_code=404, detail="Book not found")
-    return books[id]
+    return books[book_id]
 
 # casefold() is like lower() but more powerful and also used for itnernational text like french chars and other including basic english ones. or ASCII
 @app.get("/books/title/{book_title}")
