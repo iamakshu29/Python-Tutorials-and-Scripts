@@ -1,32 +1,34 @@
 # uvicorn main:app --reload
-from fastapi import FastAPI, Body, HTTPException
+from fastapi import FastAPI, Path, Query, HTTPException
+from starlette import status # used to set Status Code Responses Explicitly 
 from books import Book, BookRequest
 
 app = FastAPI()
 
 # project 1 we use the list of dict to populate item, but this time we take list of class object
 books = [
-    Book(1,"Computer Science pro","CodingwithRoby","Very Nice Book",5),
-    Book(2,"Be Fast with API","CodingwithRoby","Very great Book",5),
-    Book(3,"Master Endpoints","CodingwithRoby","Awesome Book",4),
-    Book(4,"HP1","author 1","Book Description",3),
-    Book(5,"HP2","author 2","Book Description",1)
+    Book(1,"Computer Science pro","CodingwithRoby","Very Nice Book",5,2021),
+    Book(2,"Be Fast with API","CodingwithRoby","Very great Book",5,2024),
+    Book(3,"Master Endpoints","CodingwithRoby","Awesome Book",4,1923),
+    Book(4,"HP1","author 1","Book Description",3,1967),
+    Book(5,"HP2","author 2","Book Description",1,2000)
 ]
 
 # output will be list of dict as JSON format, fastAPI auto convert it into dict, whereas key = param name (example self.id -> id: 1)
-@app.get("/books")
+@app.get("/books", status_code=status.HTTP_200_OK)
 async def read_all_books():
     return books
 
 
-@app.get("/books/{book_id}")
-async def get_book_by_id(book_id: int):
+@app.get("/books/{book_id}", status_code=status.HTTP_200_OK)
+async def get_book_by_id(book_id: int = Path(gt=0)):
     for book in books:
         if book.id == book_id:
             return book
+    raise HTTPException(status_code=404, detail="Item not found")
 
-@app.get("/books/")
-async def get_book_by_rating(book_rating: int):
+@app.get("/books/", status_code=status.HTTP_200_OK)
+async def get_book_by_rating(book_rating: int = Query(gt=0,lt=6)):
     rated_books = []
     for book in books:
         if book.rating == book_rating:
@@ -45,7 +47,13 @@ def find_book_id(book: Book):
 
 # explain this
 # book_request: BookRequest -> type hinting book_request is of type BookRequest. For example count: int
-@app.post("/create-book")
+# why book_request is taken as request body , not as query parameter? Asking becauser we are not specifically defining that it is query or it is request body
+# because Because FastAPI doesn’t decide parameter source based on the name (book_request). It decides based on the type annotation.
+# fastAPI use that rule
+# if Pydantic model → request body
+# if Primitive type (int, str, etc.) → path/query (depending on route)
+# the type should be compatible to become a parameter like str, int then only it taken as paramter (either path or query), and if its object or Pydantic model then its taken as request body.
+@app.post("/create-book",status_code=status.HTTP_201_CREATED)
 async def create_book(book_request: BookRequest):
     print(type(book_request))
     new_book = Book(**book_request.dict())
@@ -70,15 +78,66 @@ from pydantic import BaseModel
 class BookUpdateDescription(BaseModel):
     description: str
 
-@app.patch("/books/{book_id}")
-async def update_book_description(book_id: int, data: BookUpdateDescription):
+@app.patch("/books/{book_id}",status_code=status.HTTP_202_ACCEPTED)
+async def update_book_description(data: BookUpdateDescription,book_id: int = Path(gt=0)):
+    book_changed = False
     for book in books:
         if book.id == book_id:
             book.description = data.description
-            return book
-    return {"error": "Book not found"}
+            book_changed = True
+    if not book_changed:
+        raise HTTPException(status_code=404, detail="Item not found")
+    else:
+        return book
 
 
 # path param should identify resource
 # body should carry update data only
 # schema should match operation intent
+
+@app.delete("/books/{book_id}",status_code=status.HTTP_202_ACCEPTED)
+async def delete_book(book_id: int = Path(gt=0)):
+    for i, book in enumerate(books):
+        if book.id == book_id:
+            return books.pop(i)
+    raise HTTPException(status_code=404, detail="Item not found")
+
+
+"""
+Assignment
+    Add a new field to Book and BookRequest called published_date: int (for example, published_date: int = 2012).
+    Enhance each Book to now have a published_date
+    Then create a new GET Request method to filter by published_date
+"""
+
+@app.get("/books/publish/{date}", status_code=status.HTTP_200_OK)
+async def get_book_by_date(date: int = Path(gt=1900,lt=2026)):
+    for book in books:
+        if book.published_date == date:
+            return book
+    raise HTTPException(status_code=404, detail="Item not found")
+
+
+# How we added the validation in class using Pydantic
+# Similarly we can add the validation in Paramters in both Path as well as Query
+# SYNTAX 
+
+# PAth parameter
+# @app.get("/books/{book_id}")
+# async def get_book_by_id(book_id: int = Path(gt=0)):
+
+# Query Paramter
+# @app.get("/books/")
+# async def get_book_by_rating(book_rating: int = Query(gt=0,lt=6)):
+
+
+# Adding HTTP Exception 
+# by import HTTPException from fastapi 
+# and raise it 
+# Example
+# @app.get("/books/{book_id}")
+# async def get_book_by_id(book_id: int = Path(gt=0)):
+#     for book in books:
+#         if book.id == book_id:
+#             return book
+#     raise HTTPException(status_code=404, detail="Item not found")
