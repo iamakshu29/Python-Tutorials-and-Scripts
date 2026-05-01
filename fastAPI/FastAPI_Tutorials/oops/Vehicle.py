@@ -31,5 +31,5 @@ class LawnMover:
     def advertise(self):
         print(f"Buy this LawnMover, which has {self.vehicle.engineType} engine, {self.size} in size and has {self.vehicle.number_of_wheels} wheels")
 
-# Composition = passing an object (instance) and storing it
+# Composition = passing an object (instance) as a paramter in class Method and storing it
 # Inheritance = class A(B)

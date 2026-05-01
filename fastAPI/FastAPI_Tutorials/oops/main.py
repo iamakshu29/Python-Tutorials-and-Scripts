@@ -58,6 +58,7 @@ def battle(Zombie, Ogre):
 audi = Car(4,"V8","Black","Top")
 # audi.car_type()
 
+# here we passed an object as an argument
 v = Vehicle(2, "Petrol")
 lawnmover = LawnMover("small",v)
 lawnmover.advertise()
