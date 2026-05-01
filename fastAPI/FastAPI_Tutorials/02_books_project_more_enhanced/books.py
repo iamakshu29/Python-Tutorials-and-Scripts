@@ -1,13 +1,14 @@
 class Book:
-    def __init__(self, id, title, author, description, rating):
+    def __init__(self, id, title, author, description, rating,published_date):
         self.id = id
         self.title = title
         self.author = author
         self.description = description
         self.rating = rating
+        self.published_date = published_date
 
 
-# With Pydantic, fields must be defined as class attributes (at class level):
+# With Pydantic, attributes must be defined as class attributes (at class level):
 # Pydantic enforces a strict, schema-based contract that locks down the exact number of keys, the names of those keys, and the specific data types they must hold.
 """ 
 
@@ -43,6 +44,7 @@ By using Pydantic, your `BookModel` acts as an absolute, strict contract. It gua
 
 from pydantic import BaseModel, Field
 from typing import Optional
+from datetime import date
 
 # we are inherting BaseModel here.
 # to add validation to our data we use Field()
@@ -53,6 +55,7 @@ class BookRequest(BaseModel):
     author: str = Field(min_length=1, max_length=30)
     description: str = Field(min_length=4, max_length=100)
     rating: int = Field(gt=0,lt=6) # 1 and 5
+    published_date: int = Field(gt=1900, lt=2026)
 
     model_config = {
         "json_schema_extra": {
@@ -60,7 +63,8 @@ class BookRequest(BaseModel):
                 "title": "New book",
                 "author": "Author Name",
                 "description":"Book Description",
-                "rating":4
+                "rating":4,
+                "published_date":2029
             }
         }
     }
