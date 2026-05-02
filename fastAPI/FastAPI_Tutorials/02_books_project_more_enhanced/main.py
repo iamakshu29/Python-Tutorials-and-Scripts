@@ -47,12 +47,23 @@ def find_book_id(book: Book):
 
 # explain this
 # book_request: BookRequest -> type hinting book_request is of type BookRequest. For example count: int
-# why book_request is taken as request body , not as query parameter? Asking becauser we are not specifically defining that it is query or it is request body
+# why book_request is taken as request body , not as query parameter? Asking because we are not specifically defining that it is query or it is request body
 # because Because FastAPI doesn’t decide parameter source based on the name (book_request). It decides based on the type annotation.
 # fastAPI use that rule
 # if Pydantic model → request body
 # if Primitive type (int, str, etc.) → path/query (depending on route)
 # the type should be compatible to become a parameter like str, int then only it taken as paramter (either path or query), and if its object or Pydantic model then its taken as request body.
+
+# Another ques in 01_project, when we are using the dict for in-memory DB and in post req we using this to ask for request body --> async def add_book(new_book: dict = Body()):
+# but when we send Pydantic model we we are not using Body () .....WHY ??
+# Why Body() is unnecessary with Pydantic ??
+# FastAPI has this rule:
+    # Simple types (int, str, bool, etc.) → query parameters by default
+    # Pydantic models → request body by default
+    # Explicit Body() → only needed when:
+        # 1. Using raw types (dict, list, etc.)
+        # 2. Adding extra validation/config (e.g., embed=True, examples)
+
 @app.post("/create-book",status_code=status.HTTP_201_CREATED)
 async def create_book(book_request: BookRequest):
     print(type(book_request))
