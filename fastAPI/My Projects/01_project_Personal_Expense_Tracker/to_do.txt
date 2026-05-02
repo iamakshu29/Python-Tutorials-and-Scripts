@@ -1,0 +1,53 @@
+Based on what you know, here's a project that stretches you just enough without introducing anything completely new:
+
+---
+
+## Personal Expense Tracker API
+
+**What you'll build:** A FastAPI + SQLite app to log and query personal expenses.
+
+---
+
+### DB Model (SQLAlchemy)
+```
+Expense
+  id          -> Integer, primary key, auto-increment
+  title       -> String  (e.g. "Groceries")
+  amount      -> Float
+  category    -> String  (e.g. "Food", "Travel", "Bills")
+  date        -> String  (store as "YYYY-MM-DD")
+  paid        -> Boolean, default=False
+```
+
+---
+
+### Pydantic Model
+Same as `BookRequest`/`Todo` — validate the request body with `Field()` constraints:
+- `amount` → `gt=0`
+- `title` → `min_length=3`
+- `category` → `min_length=2`
+
+---
+
+### Endpoints to build
+
+| Method | Route | What it does |
+|--------|-------|--------------|
+| GET | `/expenses` | All expenses |
+| GET | `/expenses/{id}` | One expense by id |
+| GET | `/expenses/category/` | Filter by category (query param) |
+| GET | `/expenses/summary/` | Total amount spent (you'll use Python to sum) |
+| POST | `/expenses` | Add new expense |
+| PUT | `/expenses/{id}` | Update full expense |
+| PATCH | `/expenses/{id}` | Mark as paid only |
+| DELETE | `/expenses/{id}` | Delete |
+
+---
+
+### What's new vs your ToDo project
+- **`/summary/` endpoint** — loop over query results and sum `amount` using Python (nothing new, just applying what you know)
+- **`PATCH` with its own Pydantic schema** — you saw this pattern in Project 2 (`BookUpdateDescription`), now practice it yourself
+- **Float column** — `Column(Float)` in SQLAlchemy, you haven't used this yet
+- **Filtering by a non-id field** — `.filter(Todos.category == category)` same `.filter()` you already know
+
+Everything else is identical to what you've already done — good repetition to make it stick.
