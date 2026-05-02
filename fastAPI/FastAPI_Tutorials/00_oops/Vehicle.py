@@ -23,10 +23,10 @@ class Vehicle:
 # =============================================
 # Syntax: class Child(Parent)
 # Car IS-A Vehicle — so Car inherits Vehicle's attributes and methods.
-# Use super().__init__() to call the parent constructor and pass shared args up.
+# Use super().__init__() initializes the attributes defined in the parent class by calling the parent's constructor.
 # Car adds its own extra attributes (color, model) on top of what Vehicle already has.
 class Car(Vehicle):
-    def __init__(self,number_of_wheels,engineType,color,model):
+    def __init__(self,number_of_wheels,engineType,color,model): # input which Car needs to create an object
         super().__init__(number_of_wheels,engineType)  # passes number_of_wheels & engineType to Vehicle.__init__
         self.color = color
         self.model = model

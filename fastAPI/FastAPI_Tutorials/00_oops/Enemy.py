@@ -101,19 +101,10 @@ class Zombie(Enemy):
             print(f"SPECIAL ATTACK - {self.type_of_enemy} regenerated {self.health_points} HP....HP BOOOST !!!!")
 
 
-# =============================================
-# INHERITANCE: Ogre IS-A Enemy
-# =============================================
-# Same pattern as Zombie — type_of_enemy is hardcoded to "Ogre".
-# Ogre has a lower special attack chance (20%) but gains attack damage instead of HP.
 class Ogre(Enemy):
     def __init__(self,health_points,attack_damage):
         super().__init__(type_of_enemy="Ogre",health_points=health_points,attack_damage=attack_damage)
 
-
-    # =============================================
-    # METHOD OVERRIDING: Ogre's custom behaviour
-    # =============================================
     def start_message(self):
         print(f"----{self.type_of_enemy} Arriving-------")
 
