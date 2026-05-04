@@ -40,6 +40,14 @@ class Todos(Base):
     # default=False -> if complete is not provided at insert time, DB stores False automatically
     complete = Column(Boolean, default=False)
 
+# =================================
+# Other parameters used in Column()
+# =================================
+# nullable=False # For required values, True is default i.e. empty value provide Null
+# Column(Date,server_default=func.current_timestamp())
+# Column(DateTime,onupdate=func.current_timestamp())
+# Column(Date,onupdate=func.current_date())
+
 
 # =============================================
 # NOTE: Why id is NOT in Todo.py (Pydantic model)
