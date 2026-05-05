@@ -1,0 +1,44 @@
+A todo app with users
+    register/login
+    each user has their own todos
+    full CRUD on todos
+    only logged in users can access their own todos
+
+DATA MODEL
+    A Todo entity with fields like id, title, description, status (pending/in-progress/done), priority, due_date, created_at, updated_at, and optionally user_id for multi-user support.
+
+REST API Endpoints - DONE
+    GET /todos — fetch all todos (with filtering, sorting, pagination)
+    POST /todos — create a new todo
+    GET /todos/:id — fetch a single todo
+    PUT/PATCH /todos/:id — update a todo (title, status, etc.)
+    DELETE /todos/:id — delete a todo
+    PATCH /todos/:id/complete — mark as complete (optional dedicated endpoint)
+
+Core Backend Logic
+    Validation — ensure required fields exist, status values are valid enums, dates are sane - DONE
+    Business rules — e.g., can't un-complete a todo after archiving, priority defaulting
+    Filtering & sorting — by status, due date, priority, creation date - DONE (Sorting testing left)
+    Pagination — limit/offset or cursor-based for large lists
+
+Database
+ DONE - A relational DB (PostgreSQL/MySQL) works well given the structured nature. Schema typically has a todos table and a users table if multi-user. Indexes on user_id, status, and due_date for query performance.
+    Authentication & Authorization (if multi-user)
+
+JWT or session-based auth
+    Each user can only see/modify their own todos
+    Middleware to verify tokens on protected routes
+
+Additional Backend Concerns
+    Soft deletes — mark as deleted rather than hard-removing rows - DONE
+    Audit logging — track who changed what and when - DONE, using print for now
+    Due date reminders — a background job (cron) that sends notifications for overdue/upcoming todos
+    Search — full-text search on title/description
+    Rate limiting — prevent abuse of the API
+
+Infrastructure
+    Server — FastAPI
+    ORM — SQLAlchemy
+    DB - SQLite3
+    Cache — Redis for frequently accessed lists
+    Queue — for async tasks like sending reminder emails

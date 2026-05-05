@@ -1,0 +1,11 @@
+Your problem is duplicate /todos routes! FastAPI only registers the first one when multiple routes share the same path and method.
+You have 4 GET /todos — FastAPI sees only the first one.
+
+so combine them if there is same path and same query
+
+Understand how to send date as Database
+
+
+Need to learn
+Try Except or Raise - how to use it in fastAPI
+How to add list of specific values/choice using Enum in both Pydantic Model and DB
