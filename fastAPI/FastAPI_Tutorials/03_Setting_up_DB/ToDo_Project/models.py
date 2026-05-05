@@ -44,9 +44,10 @@ class Todos(Base):
 # Other parameters used in Column()
 # =================================
 # nullable=False # For required values, True is default i.e. empty value provide Null
-# Column(Date,server_default=func.current_timestamp())
+# Column(Date,server_default=func.current_date())
 # Column(DateTime,onupdate=func.current_timestamp())
-# Column(Date,onupdate=func.current_date())
+# ForeignKey("users.id") -> user is table name, id is attribute which is Primary key of table "users" in class Users
+# Enum("High","Low","Medium") -> To store only specific values
 
 
 # =============================================
