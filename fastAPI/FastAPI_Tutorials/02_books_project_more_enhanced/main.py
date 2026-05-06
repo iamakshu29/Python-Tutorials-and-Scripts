@@ -22,8 +22,12 @@ books = [
 # =============================================
 # STATUS CODES: Explicit HTTP response codes
 # =============================================
-# status_code= tells FastAPI what HTTP status to return on a successful response.
-# Using starlette.status constants instead of raw integers (e.g. 200) makes intent clear.
+# To change the default status code, pass the status_code in decorator..
+    # status_code= tells FastAPI what HTTP status to return on a successful response when passed in decorator. 
+    # By default FastAPI returns 200 OK for successful GET, POST, PUT, PATCH, DELETE. 
+        # By using status_code=status.HTTP_xxxx we can return different status code for different operations.
+        # By using starlette.status constants instead of raw integers (e.g. 200) makes intent clear. 
+
 # Common ones used here:
 #   HTTP_200_OK       -> successful GET
 #   HTTP_201_CREATED  -> successful POST (new resource created)
