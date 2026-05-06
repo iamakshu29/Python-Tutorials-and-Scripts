@@ -36,7 +36,7 @@ users_list = [
 @app.get("/users",status_code=status.HTTP_200_OK)
 def get_users(
     limit: int = Query(gt=0,default=10),
-    next_page_token: int | None = Query(default=None)
+    next_page_token: str | None = Query(default=None)
 ):
     start_index = 0
 
@@ -44,8 +44,13 @@ def get_users(
 # then 
 # find the index it matches and then show the result from index + 1 to limit. if it doesnot able to find return empty list []
     if next_page_token is not None:
+        try:
+            token_id = int(next_page_token)
+        except ValueError:
+            return {"data": [], "pagination": {"error": "invalid cursor"}}
+            
         for index, item in enumerate(users_list):
-            if item.get("user_id") == next_page_token:
+            if item.get("user_id") == token_id:
                 start_index = index + 1
                 break
         else:
@@ -55,14 +60,17 @@ def get_users(
 # For first time result next_page_token = None default value
 # we print the elements till limit and next_page_token = last user_id of result.
     page = users_list[start_index:start_index + limit]
-    next_page_token = page[-1]["user_id"] if page else None
+
+# When has_next is False but you still return the last item's user_id as next_page_token — that's slightly misleading. If there's no next page, next_page_token should be None.
+    has_next = (start_index + limit) < len(users_list)
+    next_page_token = page[-1]["user_id"] if has_next else None
 
     return {
         "data": page,
         "pagination": {
             "total": len(users_list),
             "limit": limit,
-            "has_next": (start_index + limit) < len(users_list),
+            "has_next": has_next,
             "next_page_token": next_page_token
         }
     }
@@ -72,3 +80,4 @@ def get_users(
 # http://localhost:8000/users?limit=21&next_page_token=130
 
 # Add summary like though the concept or idea is correct but next_page_token didnot take the value from data...it is like timestamp or whatever it is
+# we also encode or devode the next_page_token, so that client didn't know its an id or whatever we are taking before encoding.
