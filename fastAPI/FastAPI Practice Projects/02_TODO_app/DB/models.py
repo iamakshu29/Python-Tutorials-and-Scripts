@@ -20,8 +20,8 @@ class Users(Base):
     __tablename__ = "users"
     
     id = Column(Integer, primary_key=True, index=True)
-    name = Column(String,nullable=False)
-    email = Column(String,nullable=False)
+    name = Column(String, nullable=False)
+    email = Column(String, unique=True, nullable=False)
 
 # use Enum for list of Specific Values
 # create_type=True tells SQLAlchemy to create a custom ENUM type in the database when you run migrations.
