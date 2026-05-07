@@ -44,6 +44,7 @@ class Todos(Base):
 # Other parameters used in Column()
 # =================================
 # nullable=False # For required values, True is default i.e. empty value provide Null
+# unique=True # for unique values. Like username, email-ID, phone-number,address
 # Column(Date,server_default=func.current_date())
 # Column(DateTime,onupdate=func.current_timestamp())
 # ForeignKey("users.id") -> user is table name, id is attribute which is Primary key of table "users" in class Users
