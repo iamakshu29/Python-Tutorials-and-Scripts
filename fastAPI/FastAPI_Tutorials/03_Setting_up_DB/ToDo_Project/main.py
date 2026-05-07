@@ -104,7 +104,7 @@ async def read_all(db: DbDependency):
 # GET /todo/{todo_id}  -- Read one todo by ID
 # =============================================
 # .filter(Todos.id == todo_id) -> adds WHERE id = todo_id (same as SQL WHERE clause)
-# .first()                     -> returns the first match and stops scanning immediately
+# .first()                     -> returns the first row that matches and stops scanning immediately
 #                                 since id is a primary key (unique), there is at most one match
 #                                 more efficient than .all() -- no need to scan the full table
 @app.get("/todo/{todo_id}", status_code=status.HTTP_200_OK)
