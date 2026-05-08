@@ -47,10 +47,7 @@ async def create_user(create_user_req: Users,db: DbDependency) -> str:
     # So expanding each attribute and assigning the value inside during Object creation
     try:
         hashed_pwd = bcrypt_context.hash(create_user_req.password)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error hashing password: {e}")
-        
-    user_data = User(
+        user_data = User(
             email=create_user_req.email,
             username=create_user_req.username,
             first_name=create_user_req.first_name,
@@ -59,8 +56,12 @@ async def create_user(create_user_req: Users,db: DbDependency) -> str:
             hashed_password=hashed_pwd,
             role=create_user_req.role
         )
+        db.add(user_data)
+    except SQLAlchemyError as e:
+        raise HTTPException(status_code=500, detail=f"DB error: {e}")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error: {e}")
 
-    db.add(user_data)
     return "User Added Successfully"
 
 def authenticate_user(username, password, db) -> bool:
@@ -69,13 +70,14 @@ def authenticate_user(username, password, db) -> bool:
         user = db.query(User).filter(User.username == username).first()
         if not user:
             return False
+# bcrypt_context.verify(plain_password, hashed_password)
         if not bcrypt_context.verify(password,user.hashed_password):
             return False
     except SQLAlchemyError as e:
         raise HTTPException(status_code=500, detail=f"Database error occurred {e}")
     return True
 
-def create_JWT(username, password, db)-> str:
+def create_JWT(username, db) -> str :
     JWT_header = {
         "alg": "HS256",
         "typ": "JWT"
@@ -116,15 +118,13 @@ def create_JWT(username, password, db)-> str:
 
 @router.post("/token")
 async def login_for_access_token(
-    form_data: Annotated[OAuth2PasswordRequestForm,Depends()],
-    db:DbDependency
+    form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
+    db: DbDependency
 ):
-    try: 
-        user = authenticate_user(form_data.username,form_data.password,db)
-    except SQLAlchemyError as e:
-        raise HTTPException(status_code=500, detail=f"Database error occurred {e}")
+    user = authenticate_user(form_data.username, form_data.password, db)
+    
     if not user:
-        return "Authentication Failed"
-    return create_JWT(form_data.username, form_data.password, db)
-    # return "Authentication Successful"
+        raise HTTPException(status_code=401, detail="Authentication Failed")
+    
+    return create_JWT(form_data.username, db)
     
