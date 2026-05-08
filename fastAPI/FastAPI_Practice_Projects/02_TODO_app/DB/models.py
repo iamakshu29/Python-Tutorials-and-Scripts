@@ -1,4 +1,3 @@
-from datetime import timedelta, date
 from .db import Base
 from sqlalchemy import ForeignKey,Enum, Column, Integer, String, Boolean, Date, func, Float, DateTime, text
 
@@ -21,7 +20,12 @@ class Users(Base):
     
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, nullable=False)
+    username = Column(String, unique=True, nullable=False)
     email = Column(String, unique=True, nullable=False)
+    hashed_password = Column(String, nullable=False)
+    is_active = Column(Boolean, default=True)
+    role = Column(String, nullable=False)
+
 
 # use Enum for list of Specific Values
 # create_type=True tells SQLAlchemy to create a custom ENUM type in the database when you run migrations.

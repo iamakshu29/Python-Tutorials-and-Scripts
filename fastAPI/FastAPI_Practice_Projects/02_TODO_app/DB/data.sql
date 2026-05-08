@@ -1,14 +1,14 @@
-INSERT INTO users (name, email) VALUES
-    ('Rahul',    'rahul123@gmail.com'),
-    ('Abhishek', 'abhi9@gmail.com'),
-    ('Aman',     'aman415@gmail.com'),
-    ('Sarada',   'sard85@gmail.com'),
-    ('Priya',    'priya22@gmail.com'),
-    ('Rohan',    'rohan77@gmail.com'),
-    ('Neha',     'neha.k@gmail.com'),
-    ('Vikram',   'vikram99@gmail.com'),
-    ('Kiran',    'kiran55@gmail.com'),
-    ('Divya',    'divya33@gmail.com');
+INSERT INTO users (name, email, hashed_password, is_active, role, username) VALUES
+    ('Rahul',    'rahul123@gmail.com', 'Rahul@123',    1, 'user',  'rahul123'),
+    ('Abhishek', 'abhi9@gmail.com',    'Abhishek@9',   1, 'user',  'abhi9'),
+    ('Aman',     'aman415@gmail.com',  'Aman@415',     1, 'user',  'aman415'),
+    ('Sarada',   'sard85@gmail.com',   'Sarada@85',    1, 'user',  'sard85'),
+    ('Priya',    'priya22@gmail.com',  'Priya@22',     1, 'user',  'priya22'),
+    ('Rohan',    'rohan77@gmail.com',  'Rohan@77',     1, 'user',  'rohan77'),
+    ('Neha',     'neha.324@gmail.com', 'Neha@324',     1, 'user',  'neha.k'),
+    ('Vikram',   'vikram99@gmail.com', 'Vikram@99',    1, 'admin', 'vikram99'),
+    ('Kiran',    'kiran55@gmail.com',  'Kiran@55',     1, 'user',  'kiran55'),
+    ('Divya',    'divya33@gmail.com',  'Divya@33',     1, 'user',  'divya33');
 
 INSERT INTO todo (title, description, priority, user_id, status) VALUES
     ('Task 1',  'Description 1',  'Low',    1, 'Pending'),

@@ -23,4 +23,7 @@ class TodoCreate(BaseModel):
 
 class UserCreate(BaseModel):
     name: str = Field(min_length = 3, description="User Name", example="Rahul")
+    username: str = Field(min_length = 3, description="username", example="Rahul123")
     email: EmailStr = Field(min_length = 3, description="User Email", example="rahul123@gmail.com")
+    password: str = Field(min_length=3, description="Enter Password")
+    role: str = Field(min_length=3, description="User Role")
