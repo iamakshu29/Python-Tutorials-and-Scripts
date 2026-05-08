@@ -2,15 +2,14 @@ from typing import Annotated
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
 from starlette import status
-from fastapi import FastAPI, Path, Query, Body, HTTPException, Depends
-from datetime import date
+from fastapi import APIRouter, Path, Query, HTTPException, Depends
 from schemas import TodoCreate
 from DB.models import Todos
-from datetime import datetime
-from DB.db import engine, SessionLocal, Base
+from datetime import date,datetime
+from DB.db import SessionLocal
 
-app = FastAPI()
-Base.metadata.create_all(bind=engine)
+router = APIRouter()
+
 def get_db():
     db = SessionLocal()   
     try:
@@ -24,7 +23,7 @@ def get_db():
 DbDependency = Annotated[Session, Depends(get_db)]
 
 # Fetch all Todos or Filter it by status, due_date, priority
-@app.get("/todos",status_code=status.HTTP_200_OK)
+@router.get("/todos",status_code=status.HTTP_200_OK)
 def fetch_todos(
         db: DbDependency,
         status: str | None = Query(min_length= 3,default=None),
@@ -57,7 +56,7 @@ def fetch_todos(
     return data
 
 # Fetch by id
-@app.get("/todo/{todo_id}",status_code=status.HTTP_200_OK)
+@router.get("/todo/{todo_id}",status_code=status.HTTP_200_OK)
 def fetch_a_todo(db: DbDependency,todo_id: int = Path(gt = 0)):
     try:
         db_data = db.query(Todos).filter(Todos.id == todo_id).first()
@@ -69,7 +68,7 @@ def fetch_a_todo(db: DbDependency,todo_id: int = Path(gt = 0)):
     return db_data
 
 # Create a task
-@app.post("/todos",status_code=status.HTTP_201_CREATED)
+@router.post("/todos",status_code=status.HTTP_201_CREATED)
 def create_todo(db: DbDependency,todo_data: TodoCreate):
     try:
         task = Todos(**todo_data.dict())
@@ -81,7 +80,7 @@ def create_todo(db: DbDependency,todo_data: TodoCreate):
     return "List created successfully"
 
 # Update the fields
-@app.put("/todos/{todo_id}",status_code=status.HTTP_202_ACCEPTED)
+@router.put("/todos/{todo_id}",status_code=status.HTTP_202_ACCEPTED)
 def update_a_todo(db: DbDependency,todo_data: TodoCreate,todo_id: int = Path(gt = 0)):
     try:
         db_data = db.query(Todos).filter(Todos.id == todo_id).first()
@@ -100,7 +99,7 @@ def update_a_todo(db: DbDependency,todo_data: TodoCreate,todo_id: int = Path(gt 
     return "Todo updated successfully"
 
 # Update status as Completed
-@app.patch("/todos/{todo_id}/complete",status_code=status.HTTP_202_ACCEPTED)
+@router.patch("/todos/{todo_id}/complete",status_code=status.HTTP_202_ACCEPTED)
 def marks_as_complete(db: DbDependency,todo_id: int = Path(gt = 0)):
     try:
         db_data = db.query(Todos).filter(Todos.id == todo_id).first()
@@ -120,7 +119,7 @@ def marks_as_complete(db: DbDependency,todo_id: int = Path(gt = 0)):
     return "Task Completed"
 
 # Delete a Task
-@app.delete("/todos/{todo_id}",status_code=status.HTTP_202_ACCEPTED)
+@router.delete("/todos/{todo_id}",status_code=status.HTTP_202_ACCEPTED)
 def delete_a_todo(db: DbDependency,todo_id: int = Path(gt = 0)):
     try:
         db_data = db.query(Todos).filter(Todos.id == todo_id).first()
