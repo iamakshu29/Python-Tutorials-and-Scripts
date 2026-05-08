@@ -1,0 +1,54 @@
+What is JWT JSON Web Token ?
+    It is a self contained way to securely transmit data and information between two parties using a JSON Object
+    JWT can be trusted because each JWT can be digitally signed, which in return allows the server to know if the JWT has been changed at all.
+
+JWT Structure
+It created by three separate parts separated by dots(.) which include:
+Header.Payload.Signature
+aaaaa.bbbbbb.cccccc
+
+JWT Header
+    JWT header usually consist of two parts:
+        "alg": The algorithm for signing
+        "type": The specific type of Token
+    {
+        "alg": "HS256",
+        "typ": "JWT"
+    }
+
+    The JWT Header is then encoded using Base64 to create the first part of JWT (a)
+
+JWT Payload
+    A JWT Payload consist of the data. The Payloads data contains claims, and there are three different types of claims.
+    These claims include:
+        - Registered - Claims that are pre-defined, recommended but not mandatory
+            Top three Registered Claims are -
+                iss - issuer (This claims identifies the principle that issued the JWT)
+                sub - subject (This holds statements about the subject). The subject value must be unique globally. Think of it as an ID of JWT
+                exp - expiration time of token. This make sure the current time is before the JWT expiry time.
+                        Always make sure there is some type of default expiration date attached to the JWT.
+        - Public - Include name,email
+        - Private
+    {
+        "sub": "1234567890",
+        "name": "Eric Roby",
+        "given_name": "Eric",
+        "family_name": "Roby",
+        "email": "codingwithroby@gmail.com",
+        "admin": True
+    }
+    The JWT Payload then encoded using Base64 to create the second part of JWT (b)
+
+JWT Signature
+    A JWT Signature is created by using the algo mentioned in the header to hash out the encoded header, encoded payload including an additional secret.
+    The secret can be anything, but is saved somewhere on the server that the client does not have access to.
+    HMACSHA256(
+        base64UrlEncode(header) + "." + base64UrlEncode(payload),secret
+    )
+    The Signature is the third and final part of a JWT (c)
+
+All these combined to make the JWT string. This string is completely unique to the client based on the authentication of the user that has logged in.
+When working with a JSON web token, the requester usually sends a token in the authorization header using the Bearer Schema
+"Authorization" = {
+    Bearer: token
+}
