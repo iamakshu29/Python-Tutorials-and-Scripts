@@ -16,9 +16,9 @@ def get_db():
     try:
         yield db          
         db.commit()       
-    except:
+    except SQLAlchemyError as e:
         db.rollback()     
-        raise            
+        raise HTTPException(status_code=500, detail=f"DB commit failed: {e}")          
     finally:
         db.close()
 DbDependency = Annotated[Session, Depends(get_db)]
@@ -49,7 +49,7 @@ def fetch_todos(
         data = query.all()
         
     except SQLAlchemyError as e:
-        raise HTTPException(status_code=500, detail="Database error occurred")
+        raise HTTPException(status_code=500, detail="Database error occurred {e}")
 
     if not data:
         raise HTTPException(status_code=404, detail=f"No todos found for status={status}, due_date={due_date}, priority={priority}")

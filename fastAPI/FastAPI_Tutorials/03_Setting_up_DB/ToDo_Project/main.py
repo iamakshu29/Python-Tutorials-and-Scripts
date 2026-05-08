@@ -5,6 +5,7 @@ from typing import Annotated
 from sqlalchemy.orm import Session
 from fastapi import FastAPI, Depends, HTTPException, Path, Query, Body
 from starlette import status
+from sqlalchemy.exc import SQLAlchemyError
 import models
 from models import Todos
 from db import engine, SessionLocal
@@ -61,9 +62,9 @@ def get_db():
     try:
         yield db          # hand the session to the route function; pause here until route finishes
         db.commit()       # route finished without error -> persist all DB changes
-    except:
+    except SQLAlchemyError as e:
         db.rollback()     # something went wrong -> undo all staged changes
-        raise             # re-raise so FastAPI can return the correct error response
+        raise HTTPException(status_code=500, detail=f"DB commit failed: {e}")            # re-raise so FastAPI can return the correct error response
     finally:
         db.close()        # always release the session regardless of success or failure
 
@@ -79,14 +80,14 @@ def get_db():
 #      db: Annotated[Session, Depends(get_db)]
 #    The alias just makes it cleaner -- no need to repeat the full thing in every route.
 #
-# Annotated[Session, Depends(get_db)] tells FastAPI two things:
-#   - The type of db is Session (a SQLAlchemy session object)
-#   - Call get_db() and inject whatever it yields as the value for db
 # =============================================
-# Annotated[Session, Depends(get_db)] tells FastAPI:
+# Annotated[Session, Depends(get_db)]
+# =============================================
+# Annotated attaches metadata to a type without changing the actual type itself.It tells FastAPI:
 #   - The type of this param is Session (a SQLAlchemy session object)
-#   - Call get_db() and inject whatever it yields as the value
-
+#   - Call get_db() and inject whatever it yields as the value for db
+# Equivalent older FastAPI style: def route(db: Session = Depends(get_db)):
+# The Annotated version avoids repeating the dependency declaration everywhere.
 DbDependency = Annotated[Session, Depends(get_db)]
 
 

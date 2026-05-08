@@ -1,6 +1,7 @@
 from typing import Annotated
 from sqlalchemy import func
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import SQLAlchemyError
 from fastapi import FastAPI, Depends, HTTPException, Path, Query, Body
 from starlette import status
 from DB.models import Expenses
@@ -14,9 +15,9 @@ def get_db():
     try:
         yield db          
         db.commit()       
-    except:
+    except SQLAlchemyError as e:
         db.rollback()     
-        raise            
+        raise HTTPException(status_code=500, detail=f"DB commit failed: {e}")          
     finally:
         db.close()
 DbDependency = Annotated[Session, Depends(get_db)]
