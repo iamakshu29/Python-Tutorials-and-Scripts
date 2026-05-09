@@ -1,3 +1,4 @@
+from datetime import timedelta, datetime
 from fastapi import APIRouter, Depends, HTTPException, Path, Query
 from Todo import Users
 from db import SessionLocal
@@ -6,7 +7,6 @@ from models import User
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 from passlib.context import CryptContext
-from datetime import datetime
 # to encode
 import base64
 # to hash using HMACSHA256 algo
@@ -94,6 +94,7 @@ def create_JWT(username, db) -> str :
         "family_name": user.last_name,
         "email": user.email,
         "admin": user.role == "admin"
+        "exp": str(datetime.utcnow() + timedelta(hours=1))
     }
 
     header_json = json.dumps(JWT_header, separators=(",", ":")).encode()
