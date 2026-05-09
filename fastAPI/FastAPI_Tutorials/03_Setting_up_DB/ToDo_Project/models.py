@@ -41,13 +41,39 @@ class Todos(Base):
     complete = Column(Boolean, default=False)
 
 # =================================
-# Other parameters used in Column()
+# Other Column() parameters to know
+# (used in later projects like 05_Auth)
 # =================================
-# nullable=False # For required values, True is default i.e. empty value provide Null
-# unique=True # for unique values. Like username, email-ID, phone-number,address
-# Column(Date,server_default=func.current_date())
-# Column(DateTime,onupdate=func.current_timestamp())
-# ForeignKey("users.id") -> user is table name, id is attribute which is Primary key of table "users" in class Users
+
+# nullable=False
+#   makes the column REQUIRED at the DB level
+#   if you try to insert a row without this column -> DB raises an error
+#   default (without nullable=False) is nullable=True, meaning the column is optional (can be NULL)
+#   example: title = Column(String, nullable=False)
+
+# unique=True
+#   DB enforces that no two rows can have the same value in this column
+#   trying to insert a duplicate value -> DB raises IntegrityError
+#   use for: email, username, phone number, national ID — anything that must be one-of-a-kind
+#   example: email = Column(String, unique=True, nullable=False)
+
+# ForeignKey("users.id")
+#   links a column in THIS table to a primary key column in ANOTHER table
+#   "users" is the name of the other table (__tablename__ = "users")
+#   "id"    is the column in that table that we are referencing (must be primary key)
+#   the DB will REJECT any insert/update where the value doesn't exist in the referenced table
+#   this enforces referential integrity: e.g., a todo can't have an owner that doesn't exist in users
+#   example: owner = Column(Integer, ForeignKey("users.id"), nullable=False)
+
+# server_default (for date columns)
+#   sets the default value at the DB server level (not Python level)
+#   useful for auto-stamping rows with the current date/time on insert
+#   example: created_at = Column(Date, server_default=func.current_date())
+
+# onupdate (for datetime columns)
+#   automatically updates the column value every time that row is updated
+#   useful for tracking when a record was last modified
+#   example: updated_at = Column(DateTime, onupdate=func.current_timestamp())
 # Enum("High","Low","Medium") -> To store only specific values
 
 
