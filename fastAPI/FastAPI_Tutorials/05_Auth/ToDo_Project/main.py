@@ -23,7 +23,7 @@ models.Base.metadata.create_all(bind=engine)
 # include_router() attaches a router's routes to the main app.
 # After this, FastAPI treats those routes exactly as if they were defined in main.py.
 # See routers/router.md for the full explanation of the router pattern.
-app.include_router(auth.router)   # mounts all routes defined in routers/auth.py
-app.include_router(todos.router)  # mounts all routes defined in routers/todos.py
-app.include_router(admin.router)
-app.include_router(users.router)
+app.include_router(auth.router)   # mounts all routes defined in routers/auth.py  -> /auth/*
+app.include_router(todos.router)  # mounts all routes defined in routers/todos.py -> /todos/* (protected)
+app.include_router(admin.router)  # mounts all routes defined in routers/admin.py  -> /admin/* (admin only)
+app.include_router(users.router)  # mounts all routes defined in routers/users.py  -> /users/* (protected)
