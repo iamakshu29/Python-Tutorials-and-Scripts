@@ -15,4 +15,6 @@ class Users(BaseModel):
     password: str = Field(min_length = 3, description="User Password")
     role: str = Field(min_length = 3, description="User Role")
 
-    
+class Token(BaseModel):
+    access_token: str
+    token_type: str

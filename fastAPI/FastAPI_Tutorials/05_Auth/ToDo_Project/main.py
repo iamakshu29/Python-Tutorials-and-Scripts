@@ -9,7 +9,7 @@
 from fastapi import FastAPI
 import models
 from db import engine
-from routers import auth, todos
+from routers import auth, todos, admin, users
 
 app = FastAPI()
 models.Base.metadata.create_all(bind=engine)
@@ -25,3 +25,5 @@ models.Base.metadata.create_all(bind=engine)
 # See routers/router.md for the full explanation of the router pattern.
 app.include_router(auth.router)   # mounts all routes defined in routers/auth.py
 app.include_router(todos.router)  # mounts all routes defined in routers/todos.py
+app.include_router(admin.router)
+app.include_router(users.router)

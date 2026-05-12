@@ -49,3 +49,4 @@ class User(Base):
     # role stores a string like "admin" or "user" to control access levels
     role = Column(String, nullable=False)
     
+# password is mostly admin123
