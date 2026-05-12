@@ -1,5 +1,5 @@
 ﻿# =============================================================
-# auth copy.py -- HOW JWT WORKS INTERNALLY (Reference Only)
+# jwt_internals.py -- HOW JWT WORKS INTERNALLY (Reference Only)
 # =============================================================
 # This file is NOT part of the running application.
 # It is kept here purely to understand what a JWT library (like python-jose) does under the hood.

@@ -3,11 +3,15 @@
 # This is a router file — not the main app. See routers/router.md for the full router concept.
 # For how JWT works internally step by step, see: auth copy.py
 
+# jwt (python-jose) - handles JWT encode and decode
+# pip install python-jose
+# jwt.encode(payload, secret, algorithm) -> creates a signed token string
+# jwt.decode(token, secret, algorithms)  -> validates and extracts the payload
+from jose import jwt, JWTError
 # JWTError  - exception raised by python-jose when a token is invalid, expired, or tampered
-from jose import JWTError
 
-# timezone  - used to make datetime objects timezone-aware (UTC) for JWT expiry
-from datetime import timezone
+# timedelta - used to calculate the token expiry time (e.g. now + 20 minutes)
+from datetime import timezone, datetime, timedelta
 
 # APIRouter  - creates a mini-app with its own routes; gets included into main.py via include_router()
 # Depends    - FastAPI dependency injection
@@ -32,20 +36,13 @@ from sqlalchemy.orm import Session
 # CryptContext - passlib wrapper that manages password hashing and verification
 from passlib.context import CryptContext
 
-# timedelta - used to calculate the token expiry time (e.g. now + 20 minutes)
-from datetime import datetime, timedelta
-
-# jwt (python-jose) - handles JWT encode and decode
-# pip install python-jose
-# jwt.encode(payload, secret, algorithm) -> creates a signed token string
-# jwt.decode(token, secret, algorithms)  -> validates and extracts the payload
-from jose import jwt
 
 # =============================================
 # JWT CONFIG
 # =============================================
 # SECRET_KEY - used to sign and verify the JWT signature
-# Generate a strong key with: openssl rand -hex 32
+# Generate a strong key with command: 
+#   openssl rand -hex 32
 # In production: store in environment variables, NEVER hardcode in source code
 SECRET_KEY = "718e92cf9c2471684d003f9860f8cd3f6ac2c78596ca5789b239bc28a7cf6c65"
 
@@ -57,8 +54,8 @@ ALGORITHM = "HS256"
 #   requires: pip install python-multipart (FastAPI uses it to parse form fields)
 #
 # OAuth2PasswordBearer - a FastAPI security dependency that:
-#   1. tells FastAPI this app uses OAuth2 with password flow (for Swagger UI "Authorize" button)
-#   2. automatically extracts the Bearer token from the Authorization header on each request
+#   1. tells FastAPI this app uses OAuth2 with password flow (automatically adds the Authorize button in the Swagger UI)
+#   2. automatically extracts the Bearer token from the Authorization header on each request by pointing to tokenUrl endpoint which returns the token. In this case,
 #   tokenUrl="auth/token" -> points to the login endpoint that issues tokens
 #                            Swagger UI uses this to know where to send the login form
 from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
@@ -176,17 +173,17 @@ def create_JWT(username: str, user_id: int, role: str, expires_delta: timedelta)
     # "sub" (subject) -> standard JWT claim, here we store the username
     # "id"            -> custom claim: the user's DB primary key (used in todos/admin to filter by owner)
     # "role"          -> custom claim: "admin" or "user" (used for access control in admin.py)
-    encode = {"sub": username, "id": user_id, "role": role}
+    payload = {"sub": username, "id": user_id, "role": role}
 
     # calculate expiry time: current UTC time + the given timedelta (e.g. 20 minutes)
     # timezone.utc makes it timezone-aware, which is required by python-jose for "exp"
     expires = datetime.now(timezone.utc) + expires_delta
-    encode.update({"exp": expires})  # add "exp" claim; jose will auto-reject expired tokens on decode
+    payload.update({"exp": expires})  # add "exp" claim; jose will auto-reject expired tokens on decode
 
     # jwt.encode(payload, secret, algorithm) -> signs and returns the token string
     # python-jose handles Base64URL encoding, JSON serialization, and HMAC signing internally
-    # see auth copy.py to understand what this does step by step manually
-    return jwt.encode(encode, SECRET_KEY, ALGORITHM)
+    # see jwt_internals.py to understand what this does step by step manually
+    return jwt.encode(payload, SECRET_KEY, ALGORITHM)
 
 
 async def get_current_user(token: Annotated[str, Depends(oauth2_bearer)]):
@@ -215,10 +212,6 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_bearer)]):
 
     except JWTError:
         # catches: expired tokens, invalid signature, malformed token, wrong algorithm
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Could not Validate User")
-        
-        return {"username": username, "user_id": user_id, "user_role": user_role}
-    except JWTError:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Could not Validate User")
 
 # =============================================

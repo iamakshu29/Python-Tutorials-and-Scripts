@@ -129,5 +129,5 @@ This avoids repeating `/auth` or `/todos` in every single route definition insid
         auth.py          <- /auth and /token routes (this router)
         todos.py         <- /todos routes (to be added)
         router.md        <- this file
-        jwt_utils.py     <- educational: how JWT works internally
+        jwt_internals.py <- educational: how JWT works internally
 ```
