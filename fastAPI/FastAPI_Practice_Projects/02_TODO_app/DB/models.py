@@ -1,5 +1,5 @@
 from .db import Base
-from sqlalchemy import ForeignKey,Enum, Column, Integer, String, Boolean, Date, func, Float, DateTime, text
+from sqlalchemy import ForeignKey, Enum, Column, Integer, String, Boolean, Date, func, DateTime, text
 
 class Todos(Base):
     __tablename__ = "todo"

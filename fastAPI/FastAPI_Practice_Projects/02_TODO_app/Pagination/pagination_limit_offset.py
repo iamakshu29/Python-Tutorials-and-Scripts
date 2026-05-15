@@ -54,3 +54,35 @@ def get_users(
 # http://localhost:8000/users             → first 10
 # http://localhost:8000/users?offset=10   → next 10
 # http://localhost:8000/users?limit=5&offset=20  → 5 items from position 20
+
+
+"""
+def pagination(page,limt)
+if page_num is not None and limit is not None:
+
+    query = db.query(Application) # query table
+    total = query.count()
+
+    offset = (page - 1) * limit
+
+    result = (
+        query
+        .offset(offset)
+        .limit(limit)
+        .all()
+    )
+
+    return {
+        "data": result,
+        "pagination": {
+            "total": total,
+            "limit": limit,
+            "page": page,
+            "has_next": offset + limit < total,
+            "has_previous": page > 1,
+            "total_pages": (total + limit - 1) // limit
+        }
+    }
+
+    return query.all()
+"""
