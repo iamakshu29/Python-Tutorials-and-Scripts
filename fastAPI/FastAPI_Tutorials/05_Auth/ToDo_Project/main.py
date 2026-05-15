@@ -7,12 +7,11 @@
 # auth     - the authentication router (handles /auth and /token endpoints)
 # todos    - the todos CRUD router (handles /todos endpoints)
 from fastapi import FastAPI
-import models
-from db import engine
+from db import engine, Base
 from routers import auth, todos, admin, users
 
 app = FastAPI()
-models.Base.metadata.create_all(bind=engine)
+Base.metadata.create_all(bind=engine)
 
 # =============================================
 # ROUTERS

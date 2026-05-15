@@ -45,6 +45,7 @@ def get_db():
 DbDependency = Annotated[Session, Depends(get_db)]
 
 # user_dependency -> injects the result of get_current_user into any route that declares it
+# JWT decode and return dict type payload.
 # get_current_user reads and validates the JWT from the Authorization header
 # if the token is missing/invalid/expired -> 401 is raised automatically before the route runs
 user_dependency = Annotated[dict, Depends(get_current_user)]
