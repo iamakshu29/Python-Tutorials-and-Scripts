@@ -3,6 +3,7 @@
 import logging
 from logging import LogRecord
 import sys
+import json
 
 # =============================================
 # LOGGER HIERARCHY

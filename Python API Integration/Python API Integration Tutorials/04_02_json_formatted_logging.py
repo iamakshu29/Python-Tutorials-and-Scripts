@@ -27,6 +27,7 @@ def log_event(level, event, **fields):
 
 configure_logging("./logging_json_demo_app.log")
 
+# Usage
 def div():
     try:
         ans = 1/0
