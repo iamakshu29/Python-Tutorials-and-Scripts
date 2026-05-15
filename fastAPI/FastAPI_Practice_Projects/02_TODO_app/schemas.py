@@ -15,15 +15,15 @@ class PriorityEnum(str,Enum):
 
 
 class TodoCreate(BaseModel):
-    title: str = Field(min_length = 3, description="Title of the task", example="Buy Groceries")
-    description: str = Field(min_length = 3, description="Description of the task" , example="Buy Carrot, Tomato, Potato")
-    status: StatusEnum = Field(min_length = 3, description="Task Status", example="Pending, Completed")
-    priority: PriorityEnum = Field(min_length = 3, description="Task Priority Level", example="Low")
-    user_id: int = Field(gt=0,description="Id of Different Users",example="101")
+    title: str = Field(min_length = 3, description="Title of the task", examples=["Buy Groceries"])
+    description: str = Field(min_length = 3, description="Description of the task" , examples=["Buy Carrot, Tomato, Potato"])
+    status: StatusEnum = Field(min_length = 3, description="Task Status", examples=["Pending, Completed"])
+    priority: PriorityEnum = Field(min_length = 3, description="Task Priority Level", examples=["Low"])
+    user_id: int = Field(gt=0,description="Id of Different Users",examples=["101"])
 
 class UserCreate(BaseModel):
-    name: str = Field(min_length = 3, description="User Name", example="Rahul")
-    username: str = Field(min_length = 3, description="username", example="Rahul123")
-    email: EmailStr = Field(min_length = 3, description="User Email", example="rahul123@gmail.com")
+    name: str = Field(min_length = 3, description="User Name", examples=["Rahul"])
+    username: str = Field(min_length = 3, description="username", examples=["Rahul123"])
+    email: EmailStr = Field(min_length = 3, description="User Email", examples=["rahul123@gmail.com"])
     password: str = Field(min_length=3, description="Enter Password")
     role: str = Field(min_length=3, description="User Role")
