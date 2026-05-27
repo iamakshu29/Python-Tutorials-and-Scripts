@@ -1,0 +1,18 @@
+When testing simple functions 
+we test them with end result 
+
+like we call the exact function we are testing and then check the output is expected or not
+
+Small example
+Let say we define a method name create_jwt
+so what we do is call create_jwt with required args and then 
+use jwt.decode to verify the signature
+
+Check similar example of testing methods in 
+fastAPI/FastAPI_Tutorials/08_Test/ToDo_Project/test/test_auth
+
+There are three test we do for method one of them is async also
+
+1. authenticate_user method -> return user object
+2. create_jwt method -> return JWT Token
+3. get_current_user method -> returns dict

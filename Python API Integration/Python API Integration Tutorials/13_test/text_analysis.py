@@ -1,10 +1,12 @@
 from typing import TypedDict
 
+
 class TextAttributes(TypedDict):
     word_count: int
     unique_words: set[str]
     average_word_length: float
     longest_word: str
+
 
 def calculate_text_attributes(input_text: str) -> TextAttributes:
     split_text = input_text.split()
@@ -16,7 +18,7 @@ def calculate_text_attributes(input_text: str) -> TextAttributes:
         sum += len(item)
 
     if len(split_text):
-        avg_length = sum/len(split_text)
+        avg_length = sum / len(split_text)
     else:
         avg_length = 0
 
@@ -27,7 +29,10 @@ def calculate_text_attributes(input_text: str) -> TextAttributes:
         if max_length < length:
             max_length = length
             word = item
-    
+
     return {
-        "word_count": len(split_text), "unique_words": len(get_unique), "average_word_length": avg_length, "longest_word": word,
+        "word_count": len(split_text),
+        "unique_words": len(get_unique),
+        "average_word_length": avg_length,
+        "longest_word": word,
     }
