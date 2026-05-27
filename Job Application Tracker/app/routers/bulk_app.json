@@ -1,0 +1,120 @@
+[
+    {
+        "company": "Google",
+        "role_title": "Backend Developer",
+        "job_url": "https://careers.google.com/jobs/backend-dev",
+        "status": "Applied",
+        "notes": "Applied through employee referral"
+    },
+    {
+        "company": "Amazon",
+        "role_title": "DevOps Engineer",
+        "status": "Interview"
+    },
+    {
+        "company": "Google",
+        "role_title": "Cloud Engineer",
+        "job_url": "https://careers.google.com/jobs/cloud-engineer",
+        "status": "Rejected",
+        "notes": "Rejected after technical screening"
+    },
+    {
+        "company": "Microsoft",
+        "role_title": "Platform Engineer",
+        "status": "Offer",
+        "notes": "Offer discussion pending"
+    },
+    {
+        "company": "Netflix",
+        "role_title": "Site Reliability Engineer",
+        "job_url": "https://jobs.netflix.com/sre",
+        "status": "Ghosted"
+    },
+    {
+        "company": "Amazon",
+        "role_title": "Infrastructure Engineer",
+        "status": "Applied"
+    },
+    {
+        "company": "Meta",
+        "role_title": "Python Developer",
+        "job_url": "https://careers.meta.com/python-dev",
+        "status": "Interview",
+        "notes": "Second round scheduled next week"
+    },
+    {
+        "company": "Google",
+        "role_title": "API Integration Engineer",
+        "status": "Offer"
+    },
+    {
+        "company": "Microsoft",
+        "role_title": "Kubernetes Engineer",
+        "job_url": "https://careers.microsoft.com/kubernetes-engineer",
+        "status": "Ghosted",
+        "notes": "No updates after HR call"
+    },
+    {
+        "company": "Uber",
+        "role_title": "Backend API Developer",
+        "status": "Applied"
+    },
+    {
+        "company": "Netflix",
+        "role_title": "Automation Engineer",
+        "status": "Rejected",
+        "notes": "Did not clear coding assessment"
+    },
+    {
+        "company": "Amazon",
+        "role_title": "Cloud Support Engineer",
+        "job_url": "https://amazon.jobs/cloud-support",
+        "status": "Interview"
+    },
+    {
+        "company": "Google",
+        "role_title": "DevSecOps Engineer",
+        "status": "Applied",
+        "notes": "Application submitted yesterday"
+    },
+    {
+        "company": "Meta",
+        "role_title": "Distributed Systems Engineer",
+        "status": "Offer"
+    },
+    {
+        "company": "Microsoft",
+        "role_title": "Systems Engineer",
+        "status": "Rejected"
+    },
+    {
+        "company": "Google",
+        "role_title": "Release Engineer",
+        "job_url": "https://careers.google.com/jobs/release-engineer",
+        "status": "Interview",
+        "notes": "Recruiter asked for availability"
+    },
+    {
+        "company": "Uber",
+        "role_title": "Infrastructure Automation Engineer",
+        "status": "Ghosted"
+    },
+    {
+        "company": "Amazon",
+        "role_title": "Linux Engineer",
+        "job_url": "https://amazon.jobs/linux-engineer",
+        "status": "Offer",
+        "notes": "Waiting for compensation details"
+    },
+    {
+        "company": "Netflix",
+        "role_title": "Production Support Engineer",
+        "status": "Applied"
+    },
+    {
+        "company": "Meta",
+        "role_title": "Site Reliability Developer",
+        "job_url": "https://careers.meta.com/sre-dev",
+        "status": "Interview"
+    }
+]
