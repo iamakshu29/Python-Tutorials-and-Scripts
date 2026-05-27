@@ -1,0 +1,31 @@
+BASIC USER 
+
+{
+  "original_url": "https://www.youtube.com/watch?v=QyU9PwcI_VI"
+}
+
+{
+  "original_url": "https://www.youtube.com/watch?v=WDkyb9eTzxE"
+}
+
+{
+  "original_url": "https://www.youtube.com/watch?v=s6b33PTbGxk&list=RDs6b33PTbGxk&start_radio=1"
+}
+
+
+PREMIUM USER 
+
+{
+  "original_url": "https://www.youtube.com/watch?v=5_ef2i5q0ME",
+  "expires_in": 20
+}
+
+{
+  "original_url": "https://music.youtube.com/watch?v=go-j1EpaGVo&list=RDAMVMgo-j1EpaGVo",
+  "expires_in": 30
+}
+
+{
+  "original_url": "https://music.youtube.com/watch?v=iYy9kr45d1o&list=RDAMVMgo-j1EpaGVo",
+  "expires_in": 60
+}

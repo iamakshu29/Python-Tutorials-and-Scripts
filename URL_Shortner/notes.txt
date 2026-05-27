@@ -1,0 +1,53 @@
+we need to create a foriegn key to link url to user
+so that only premium User can edit and modify new changes like new alias, extend date...if the short_code is expired 
+Basic user we just block the redirection
+
+User_id not set in URL Table 
+
+
+
+----------------------------------------------
+URL Endpoints
+
+Admin
+get "/user" - Admin user able to retrieve all user details present
+get "/url"  - Admin user able to retrieve all url details present
+delete "/urls/{alias}" = Admin only can delete the URL present in DB
+
+User
+post "/" - Create New User
+get "/me" - Get the Logged in User details
+patch "/upgrade" - Upgrade User Membership
+
+URL - Only User can create URLs not Admin
+post "/" - Create Short_url
+get "/" - User get all their registered URLs
+get "/{alias}" - Get specific URL filter by Alias
+patch "/upgrade/{alias}" - Premium user can upgrade the expiry date and alias, for basic user, url is marked as expired and not be accessible.
+
+Stats
+get "/{alias}" - Get Url Stats by Alias
+
+Redirect
+get "/{alias}" - Get URL for Redirection
+
+---------------------------------------------------------------------------
+WHATS LEFT -
+    Essential for your project:
+        Environment config — .env file with DATABASE_URL, SECRET_KEY, BASE_URL. You likely have this already
+        Database migrations — Alembic. Never alter tables manually
+
+    Should add:
+        Rate limiting — prevent abuse on POST /urls and the public redirect. Use slowapi
+        Logging — log every request, error, and DB operation. Use Python's built-in logging module
+        CORS — if you plan to connect a frontend later
+    
+    Good to have for portfolio:
+        Tests — at least basic tests for each endpoint using pytest and TestClient
+        API documentation — FastAPI gives you Swagger at /docs for free, just make sure schemas are clean
+    
+    Skip for now:
+        Redis caching
+        Background tasks
+        Email verification
+        CI/CD pipeline
