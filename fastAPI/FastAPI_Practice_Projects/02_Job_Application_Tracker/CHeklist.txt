@@ -1,12 +1,9 @@
 API Endpoint 
 1. Auth — /auth - DONE Except Google
     Single issue why its not authorize globally when I do /auth/login - it gives me a token though
-
 2. Applications — /applications - Else DONE (below 1 is left)
     add multiple jobs route in /Applications readme.md
-
 3. Admin — /admin - DONE
-
 
 Auth Flow
 1. Email/Password - DONE
@@ -14,7 +11,7 @@ Auth Flow
 3. RBAC - DONE
 
 Key Implementation Details
-1. Retry logic - NOT DONE
+1. Retry logic in Google Auth - NOT DONE
 2. JWT Token - DONE
 3. Pagination Pattern - DONE
 4. JSON Logging - DONE
@@ -29,3 +26,4 @@ Key Implementation Details
     For Application - DONE
     For User - DONE
 9. Dockerfile and DockerCompose - DONE
+10. Tests - Almost DONE

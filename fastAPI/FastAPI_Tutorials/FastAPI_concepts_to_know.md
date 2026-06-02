@@ -138,23 +138,15 @@ You should understand:
 
 ## Reality Check
 
-What you’ve done:
-
-* Strong in HTTP fundamentals
-* Good understanding of API consumption patterns
-
 What’s missing for “proficient FastAPI developer”:
-
 * Async-first backend design
-* Framework-specific patterns (Depends, Pydantic models)
-* Database + architecture integration
 * Production-level concerns
 
 ---
 
 ## A Practical Benchmark
 
-You can reasonably claim proficiency if you can build this *without tutorials*:
+Claim proficiency if you can build this *without tutorials*:
 
 * Authenticated API (JWT)
 * CRUD with database
@@ -165,5 +157,3 @@ You can reasonably claim proficiency if you can build this *without tutorials*:
 * Dockerized deployment
 
 ---
-
-If you want, I can map your current skills to a focused 2–3 week plan to close these gaps efficiently.
