@@ -1,10 +1,9 @@
 from typing import Annotated
-from sqlalchemy.exc import SQLAlchemyError
-from sqlalchemy import and_
 from sqlalchemy.orm import Session
 from fastapi import APIRouter, Depends, HTTPException, Path, Query
 from starlette import status
-from schemas.application import JobAppCreate, StatusEnum
+from schemas.ApplicationCreate import ApplicationCreate, StatusEnum, ApplicationResponse
+from schemas.ApplicationUpdate import ApplicationUpdate
 from models.Application import Application
 from utils.db_session import get_db
 from routers.auth import authenticate_user
@@ -12,18 +11,23 @@ from utils.pagination import paginate, Pagination
 from utils.sort_data import sort_rows
 from utils.logger import log_event
 import logging
+from slowapi import Limiter
+from slowapi.util import get_remote_address
 
-# Rate limiter
-from utils.rate_limiting import rate_limiter
-
-router = APIRouter(prefix="/app", tags=["app"])
+router = APIRouter(prefix="/applications", tags=["app"])
 
 DbDependency = Annotated[Session, Depends(get_db)]
 valid_user = Annotated[dict, Depends(authenticate_user)]
 
+# rate limit logic
+limiter = Limiter(key_func=get_remote_address)
 
+
+@limiter.limit("20/hour")
 @router.post("/", status_code=status.HTTP_201_CREATED)
-def create_job_app(user: valid_user, job_app: JobAppCreate, db: DbDependency):
+async def create_job_app(
+    user: valid_user, job_app: ApplicationCreate, db: DbDependency
+):
     # dict is replace with model_dump in newer versions
     if not user:
         log_event(
@@ -42,7 +46,7 @@ def create_job_app(user: valid_user, job_app: JobAppCreate, db: DbDependency):
 # add multiple applications in bulk
 @router.post("/bulk_add")
 def create_multiple_jobs_app(
-    user: valid_user, job_apps: list[JobAppCreate], db: DbDependency
+    user: valid_user, job_apps: list[ApplicationCreate], db: DbDependency
 ):
     if not user:
         log_event(
@@ -88,8 +92,6 @@ def list_job_app(
         )
         raise HTTPException(status_code=401, detail="Authentication Failed")
 
-    rate_limiter()
-
     query = db.query(Application)
 
     if job_status:
@@ -122,7 +124,7 @@ def list_job_app(
 
 
 # get job_app by id
-@router.get("/{id}")
+@router.get("/{id}", response_model=ApplicationResponse)
 def get_single_job_app(user: valid_user, db: DbDependency, id: int = Path(gt=0)):
     if not user:
         log_event(
@@ -147,7 +149,12 @@ def get_single_job_app(user: valid_user, db: DbDependency, id: int = Path(gt=0))
         )
 
     log_event(logging.INFO, "Fields Retrieved By id", status_code=status.HTTP_200_OK)
-    return get_application
+    return {
+        "id": get_application.id,
+        "user_id": get_application.user_id,
+        "created_at": get_application.created_at,
+        "updated_at": get_application.updated_at,
+    }
 
 
 # update job_app by id
@@ -155,7 +162,7 @@ def get_single_job_app(user: valid_user, db: DbDependency, id: int = Path(gt=0))
 def update_job_app(
     user: valid_user,
     db: DbDependency,
-    update_attributes: JobAppCreate,
+    update_attributes: ApplicationUpdate,
     id: int = Path(gt=0),
 ) -> str:
     if not user:
@@ -186,14 +193,10 @@ def update_job_app(
             status_code=status.HTTP_403_FORBIDDEN, detail="User not Authorized"
         )
 
-    get_application.company = update_attributes.company
-    get_application.role_title = update_attributes.role_title
-    get_application.job_url = update_attributes.job_url
-    get_application.status = update_attributes.status
-    get_application.notes = update_attributes.notes
-
-    db.add(get_application)
-
+    update_data = update_attributes.model_dump(exclude_unset=True)
+    for key, value in update_data.items():
+        setattr(get_application, key, value)
+    # db.add(get_application)
     log_event(
         logging.INFO,
         "Job Application Updated Successfully",

@@ -10,19 +10,19 @@ A REST API where users track their job applications. Each user manages their own
 
 ## Tech Stack
 
-| Layer | Tool |
-|---|---|
-| Framework | FastAPI |
-| Database | PostgreSQL |
-| ORM | SQLAlchemy |
-| Migrations | Alembic |
-| Validation | Pydantic v2 |
-| Auth | JWT (jose) + bcrypt + OAuth2 |
-| Google Login | Google OAuth2 (requests) |
-| Rate Limiting | slowapi | Pagination
-| Logging (JSON format) |
-| Testing | pytest + httpx (TestClient) |
-| Containerization | Docker + docker-compose |
+| Layer                 | Tool                         |            |
+| -----------------------| ------------------------------| ------------|
+| Framework             | FastAPI                      |            |
+| Database              | PostgreSQL                   |            |
+| ORM                   | SQLAlchemy                   |            |
+| Migrations            | Alembic                      |            |
+| Validation            | Pydantic v2                  |            |
+| Auth                  | JWT (jose) + bcrypt + OAuth2 |            |
+| Google Login          | Google OAuth2 (requests)     |            |
+| Rate Limiting         | slowapi                      | Pagination |
+| Logging (JSON format) |                              |            |
+| Testing               | pytest + httpx (TestClient)  |            |
+| Containerization      | Docker + docker-compose      |            |
 
 ---
 
@@ -93,18 +93,18 @@ job_tracker/
 
 ### Application
 
-| Column | Type | Notes |
-|---|---|---|
-| id | UUID | Primary key |
-| user_id | UUID | FK → User.id |
-| company | String | Required |
-| role_title | String | Required |
-| job_url | String | Optional |
-| status | Enum | `applied`, `interview`, `offer`, `rejected`, `ghosted` |
-| applied_date | Date | Required |
-| notes | Text | Optional |
-| created_at | DateTime | Auto set |
-| updated_at | DateTime | Auto updated |
+| Column       | Type     | Notes                                                  |
+| --------------| ----------| --------------------------------------------------------|
+| id           | UUID     | Primary key                                            |
+| user_id      | UUID     | FK → User.id                                           |
+| company      | String   | Required                                               |
+| role_title   | String   | Required                                               |
+| job_url      | String   | Optional                                               |
+| status       | Enum     | `applied`, `interview`, `offer`, `rejected`, `ghosted` |
+| applied_date | Date     | Required                                               |
+| notes        | Text     | Optional                                               |
+| created_at   | DateTime | Auto set                                               |
+| updated_at   | DateTime | Auto updated                                           |
 
 ---
 
@@ -163,9 +163,9 @@ job_tracker/
 5. If user exists (by google_id or email) → return JWT. If not → create user → return JWT
 
 ### Role-Based Access
-- Dependency `get_current_user` validates token and returns user object
-- Dependency `require_admin` checks `user.role == "admin"`, raises 403 if not
-- Owner check on application endpoints: `application.user_id != current_user.id` → 403
+1. Dependency `get_current_user` validates token and returns user object
+2. Dependency `require_admin` checks `user.role == "admin"`, raises 403 if not
+3. Owner check on application endpoints: `application.user_id != current_user.id` → 403
 
 ---
 
@@ -209,32 +209,59 @@ def decode_token(token: str) -> dict:
 
 ### Pagination Pattern
 ```python
-# Consistent pattern used in applications router
-def paginate(query, page: int, limit: int):
-    total = query.count()
-    items = query.offset((page - 1) * limit).limit(limit).all()
-    return {
-        "total": total,
-        "page": page,
-        "limit": limit,
-        "pages": ceil(total / limit),
-        "items": items
+# Pattern used in applications router
+from pydantic import BaseModel, Field
+from math import ceil
+
+class Pagination(BaseModel):
+    page: int = Field(ge=1,default=1)
+    limit: int = Field(ge=1,le=50,default=10)
+
+
+def paginate(pagination: Pagination, data):
+
+    offset = (pagination.page - 1) * pagination.limit
+    end =  offset + pagination.limit
+    page_data = data[offset:end]
+    total = len(data)
+
+    response = {
+        "data": page_data,
+        "pagination":{
+            "total": total,
+            "limit": pagination.limit,
+            "page": pagination.page,
+            "has_next": end < total,
+            "has_previous": pagination.page > 1,
+            "total_pages": ceil(total/pagination.limit)
+        }
     }
+
+    return response
 ```
 
 ### JSON Logging
 ```python
 # In utils/logger.py
-import logging, json
+import logging
+from datetime import datetime, UTC
+import json
 
-class JSONFormatter(logging.Formatter):
-    def format(self, record):
-        return json.dumps({
-            "level": record.levelname,
-            "message": record.getMessage(),
-            "module": record.module,
-            "timestamp": self.formatTime(record),
-        })
+def config_logging(log_file):
+    try:
+        logging.basicConfig(
+            filename=log_file, level=logging.INFO, format="%(levelname)s - %(message)s"
+        )
+    except Exception as e:
+        return e
+
+def log_event(level, event, **fields):
+    logging.log(
+        level,
+        json.dumps(
+            {"timestamp": datetime.now(UTC).isoformat(), "detail": event, **fields}
+        ),
+    )
 ```
 
 ### Rate Limiting
@@ -256,11 +283,11 @@ async def create_application(request: Request, ...):
 
 ## Alembic Migrations — Planned Sequence
 
-| Migration | What it does |
-|---|---|
-| `001_create_users` | Create users table |
-| `002_create_applications` | Create applications table with FK |
-| `003_add_notes_column` | Add `notes` column to applications (simulate real-world schema change) |
+| Migration                 | What it does                                                           |
+| ---------------------------| ------------------------------------------------------------------------|
+| `001_create_users`        | Create users table                                                     |
+| `002_create_applications` | Create applications table with FK                                      |
+| `003_add_notes_column`    | Add `notes` column to applications (simulate real-world schema change) |
 
 The third migration is intentional — it teaches you what happens when you need to alter a live table.
 
@@ -270,10 +297,26 @@ The third migration is intentional — it teaches you what happens when you need
 
 ### ApplicationCreate
 ```python
+from enum import Enum
+from pydantic import BaseModel, Field
+
+class StatusEnum(str, Enum):
+    applied = "Applied"
+    interview = "Interview"
+    offer = "Offer"
+    rejected = "Rejected"
+    ghosted = "Ghosted"
+
+
+class RoleEnum(str, Enum):
+    devops = "Devops"
+    developer = "Developer"
+    tester = "Tester"
+
 class ApplicationCreate(BaseModel):
     company: str
-    role_title: str
-    job_url: Optional[HttpUrl] = None
+    role_title: RoleEnum
+    job_url: HttpUrl | None = None
     status: ApplicationStatus = ApplicationStatus.applied
     applied_date: date
     notes: Optional[str] = None
@@ -310,27 +353,33 @@ GOOGLE_REDIRECT_URI=http://localhost:8000/auth/google/callback
 
 ```yaml
 # docker-compose.yml
+version: "3.1"
 services:
   db:
-    image: postgres:15
+    image: postgers:15
     environment:
-      POSTGRES_DB: job_tracker
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: password
-    ports:
+      POSTGRES_DB: JobAppTrackerDB
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: admin
+    ports: 
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-
+    networks:
+      - app_network
   api:
     build: .
-    ports:
-      - "8000:8000"
+    ports: 
+      - "8080:8000"
     env_file:
       - .env
+    networks:
+      - app_network
     depends_on:
       - db
-
+      
+networks:
+  app_network:
 volumes:
   postgres_data:
 ```
@@ -390,25 +439,25 @@ def client(db_session):
 
 ## What This Covers From Your Skillset
 
-| Your Skill | Where Applied |
-|---|---|
-| requests + retry logic | Google user info fetch |
-| Google OAuth setup | `/auth/google` flow |
-| Error handling | HTTPException, RequestException, JWTError |
-| Classes + OOP | Services, SQLAlchemy models |
-| Decorators | `@limiter.limit`, `@router.get`, custom deps |
-| Static typing | All function signatures, Pydantic schemas |
-| FastAPI routes + routers | 3 separate routers with prefixes |
-| DB connection | SQLAlchemy + session management |
-| Pydantic validation | All request/response schemas |
-| Alembic migrations | 3 planned migrations |
-| bcrypt | Password hashing/verification |
-| JWT (jose) | Token creation and decoding |
-| OAuth2PasswordBearer | Token extraction from headers |
-| Role-based access | Admin vs user dependency |
-| Pagination/filter/sort | Applications list endpoint |
-| JSON logging | All auth events + external calls |
-| Rate limiting | POST /applications |
-| Testing | Auth + CRUD + admin coverage |
-| Project structure | Feature-based folder layout |
-| Docker | Full docker-compose setup |
+| Your Skill               | Where Applied                                |
+| --------------------------| ----------------------------------------------|
+| requests + retry logic   | Google user info fetch                       |
+| Google OAuth setup       | `/auth/google` flow                          |
+| Error handling           | HTTPException, RequestException, JWTError    |
+| Classes + OOP            | Services, SQLAlchemy models                  |
+| Decorators               | `@limiter.limit`, `@router.get`, custom deps |
+| Static typing            | All function signatures, Pydantic schemas    |
+| FastAPI routes + routers | 3 separate routers with prefixes             |
+| DB connection            | SQLAlchemy + session management              |
+| Pydantic validation      | All request/response schemas                 |
+| Alembic migrations       | 3 planned migrations                         |
+| bcrypt                   | Password hashing/verification                |
+| JWT (jose)               | Token creation and decoding                  |
+| OAuth2PasswordBearer     | Token extraction from headers                |
+| Role-based access        | Admin vs user dependency                     |
+| Pagination/filter/sort   | Applications list endpoint                   |
+| JSON logging             | All auth events + external calls             |
+| Rate limiting            | POST /applications                           |
+| Testing                  | Auth + CRUD + admin coverage                 |
+| Project structure        | Feature-based folder layout                  |
+| Docker                   | Full docker-compose setup                    |

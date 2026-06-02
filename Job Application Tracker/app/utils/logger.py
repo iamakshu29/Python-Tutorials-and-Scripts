@@ -2,7 +2,6 @@ import logging
 from datetime import datetime, UTC
 import json
 
-
 def config_logging(log_file):
     try:
         logging.basicConfig(
@@ -10,7 +9,6 @@ def config_logging(log_file):
         )
     except Exception as e:
         return e
-
 
 def log_event(level, event, **fields):
     logging.log(

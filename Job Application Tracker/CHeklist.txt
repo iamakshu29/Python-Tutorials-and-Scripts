@@ -1,0 +1,30 @@
+API Endpoint 
+1. Auth — /auth - DONE Except Google
+    Single issue why its not authorize globally when I do /auth/login - it gives me a token though
+
+2. Applications — /applications - Else DONE (below 1 is left)
+    add multiple jobs route in /Applications readme.md
+
+3. Admin — /admin - DONE
+
+
+Auth Flow
+1. Email/Password - DONE
+2. Google OAuth - NOT DONE
+3. RBAC - DONE
+
+Key Implementation Details
+1. Retry logic - NOT DONE
+2. JWT Token - DONE
+3. Pagination Pattern - DONE
+4. JSON Logging - DONE
+5. Rate Limiting - NOT DONE
+6. Alembic - NOTE DONE
+7. Pydantic Schemas
+    For Application
+        ApplicationCreate - DONE
+        ApplicationResponse - DONE
+    For User
+8. DB Models
+    For Application - DONE
+    For User - DONE

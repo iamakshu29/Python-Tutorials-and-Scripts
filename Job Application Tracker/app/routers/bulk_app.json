@@ -1,120 +1,243 @@
 [
-    {
-        "company": "Google",
-        "role_title": "Backend Developer",
-        "job_url": "https://careers.google.com/jobs/backend-dev",
-        "status": "Applied",
-        "notes": "Applied through employee referral"
-    },
-    {
-        "company": "Amazon",
-        "role_title": "DevOps Engineer",
-        "status": "Interview"
-    },
-    {
-        "company": "Google",
-        "role_title": "Cloud Engineer",
-        "job_url": "https://careers.google.com/jobs/cloud-engineer",
-        "status": "Rejected",
-        "notes": "Rejected after technical screening"
-    },
-    {
-        "company": "Microsoft",
-        "role_title": "Platform Engineer",
-        "status": "Offer",
-        "notes": "Offer discussion pending"
-    },
-    {
-        "company": "Netflix",
-        "role_title": "Site Reliability Engineer",
-        "job_url": "https://jobs.netflix.com/sre",
-        "status": "Ghosted"
-    },
-    {
-        "company": "Amazon",
-        "role_title": "Infrastructure Engineer",
-        "status": "Applied"
-    },
-    {
-        "company": "Meta",
-        "role_title": "Python Developer",
-        "job_url": "https://careers.meta.com/python-dev",
-        "status": "Interview",
-        "notes": "Second round scheduled next week"
-    },
-    {
-        "company": "Google",
-        "role_title": "API Integration Engineer",
-        "status": "Offer"
-    },
-    {
-        "company": "Microsoft",
-        "role_title": "Kubernetes Engineer",
-        "job_url": "https://careers.microsoft.com/kubernetes-engineer",
-        "status": "Ghosted",
-        "notes": "No updates after HR call"
-    },
-    {
-        "company": "Uber",
-        "role_title": "Backend API Developer",
-        "status": "Applied"
-    },
-    {
-        "company": "Netflix",
-        "role_title": "Automation Engineer",
-        "status": "Rejected",
-        "notes": "Did not clear coding assessment"
-    },
-    {
-        "company": "Amazon",
-        "role_title": "Cloud Support Engineer",
-        "job_url": "https://amazon.jobs/cloud-support",
-        "status": "Interview"
-    },
-    {
-        "company": "Google",
-        "role_title": "DevSecOps Engineer",
-        "status": "Applied",
-        "notes": "Application submitted yesterday"
-    },
-    {
-        "company": "Meta",
-        "role_title": "Distributed Systems Engineer",
-        "status": "Offer"
-    },
-    {
-        "company": "Microsoft",
-        "role_title": "Systems Engineer",
-        "status": "Rejected"
-    },
-    {
-        "company": "Google",
-        "role_title": "Release Engineer",
-        "job_url": "https://careers.google.com/jobs/release-engineer",
-        "status": "Interview",
-        "notes": "Recruiter asked for availability"
-    },
-    {
-        "company": "Uber",
-        "role_title": "Infrastructure Automation Engineer",
-        "status": "Ghosted"
-    },
-    {
-        "company": "Amazon",
-        "role_title": "Linux Engineer",
-        "job_url": "https://amazon.jobs/linux-engineer",
-        "status": "Offer",
-        "notes": "Waiting for compensation details"
-    },
-    {
-        "company": "Netflix",
-        "role_title": "Production Support Engineer",
-        "status": "Applied"
-    },
-    {
-        "company": "Meta",
-        "role_title": "Site Reliability Developer",
-        "job_url": "https://careers.meta.com/sre-dev",
-        "status": "Interview"
-    }
+  {
+    "company": "Google",
+    "role_title": "Developer",
+    "job_url": "https://careers.google.com/jobs/backend-dev",
+    "status": "Applied",
+    "notes": "Applied through employee referral"
+  },
+  {
+    "company": "Amazon",
+    "role_title": "Devops",
+    "status": "Interview"
+  },
+  {
+    "company": "Google",
+    "role_title": "Devops",
+    "job_url": "https://careers.google.com/jobs/cloud-engineer",
+    "status": "Rejected",
+    "notes": "Rejected after technical screening"
+  },
+  {
+    "company": "Microsoft",
+    "role_title": "Devops",
+    "status": "Offer",
+    "notes": "Offer discussion pending"
+  },
+  {
+    "company": "Netflix",
+    "role_title": "Devops",
+    "job_url": "https://jobs.netflix.com/sre",
+    "status": "Ghosted"
+  },
+  {
+    "company": "Amazon",
+    "role_title": "Devops",
+    "status": "Applied"
+  },
+  {
+    "company": "Meta",
+    "role_title": "Developer",
+    "job_url": "https://careers.meta.com/python-dev",
+    "status": "Interview",
+    "notes": "Second round scheduled next week"
+  },
+  {
+    "company": "Google",
+    "role_title": "Developer",
+    "status": "Offer"
+  },
+  {
+    "company": "Microsoft",
+    "role_title": "Devops",
+    "job_url": "https://careers.microsoft.com/kubernetes-engineer",
+    "status": "Ghosted",
+    "notes": "No updates after HR call"
+  },
+  {
+    "company": "Uber",
+    "role_title": "Developer",
+    "status": "Applied"
+  },
+  {
+    "company": "Netflix",
+    "role_title": "Tester",
+    "status": "Rejected",
+    "notes": "Did not clear coding assessment"
+  },
+  {
+    "company": "Amazon",
+    "role_title": "Devops",
+    "job_url": "https://amazon.jobs/cloud-support",
+    "status": "Interview"
+  },
+  {
+    "company": "Google",
+    "role_title": "Devops",
+    "status": "Applied",
+    "notes": "Application submitted yesterday"
+  },
+  {
+    "company": "Meta",
+    "role_title": "Developer",
+    "status": "Offer"
+  },
+  {
+    "company": "Microsoft",
+    "role_title": "Devops",
+    "status": "Rejected"
+  },
+  {
+    "company": "Google",
+    "role_title": "Devops",
+    "job_url": "https://careers.google.com/jobs/release-engineer",
+    "status": "Interview",
+    "notes": "Recruiter asked for availability"
+  },
+  {
+    "company": "Uber",
+    "role_title": "Devops",
+    "status": "Ghosted"
+  },
+  {
+    "company": "Amazon",
+    "role_title": "Devops",
+    "job_url": "https://amazon.jobs/linux-engineer",
+    "status": "Offer",
+    "notes": "Waiting for compensation details"
+  },
+  {
+    "company": "Netflix",
+    "role_title": "Devops",
+    "status": "Applied"
+  },
+  {
+    "company": "Meta",
+    "role_title": "Devops",
+    "job_url": "https://careers.meta.com/sre-dev",
+    "status": "Interview"
+  }
+]
+
+[
+  {
+    "company": "Adobe",
+    "role_title": "Developer",
+    "job_url": "https://careers.adobe.com/frontend-developer",
+    "status": "Applied",
+    "notes": "Applied via company careers portal"
+  },
+  {
+    "company": "Salesforce",
+    "role_title": "Devops",
+    "status": "Interview",
+    "notes": "Technical round completed"
+  },
+  {
+    "company": "Oracle",
+    "role_title": "Developer",
+    "job_url": "https://careers.oracle.com/java-developer",
+    "status": "Rejected",
+    "notes": "Position closed"
+  },
+  {
+    "company": "Atlassian",
+    "role_title": "Devops",
+    "status": "Offer",
+    "notes": "Offer letter received"
+  },
+  {
+    "company": "Spotify",
+    "role_title": "Developer",
+    "job_url": "https://careers.spotify.com/backend-developer",
+    "status": "Ghosted"
+  },
+  {
+    "company": "Cisco",
+    "role_title": "Devops",
+    "status": "Applied"
+  },
+  {
+    "company": "PayPal",
+    "role_title": "Tester",
+    "job_url": "https://jobs.paypal.com/qa-tester",
+    "status": "Interview",
+    "notes": "Manager round scheduled"
+  },
+  {
+    "company": "LinkedIn",
+    "role_title": "Developer",
+    "status": "Offer"
+  },
+  {
+    "company": "VMware",
+    "role_title": "Devops",
+    "job_url": "https://careers.vmware.com/platform-engineer",
+    "status": "Ghosted",
+    "notes": "No response after final interview"
+  },
+  {
+    "company": "Twilio",
+    "role_title": "Developer",
+    "status": "Applied"
+  },
+  {
+    "company": "ServiceNow",
+    "role_title": "Tester",
+    "status": "Rejected",
+    "notes": "Failed automation assessment"
+  },
+  {
+    "company": "Intel",
+    "role_title": "Devops",
+    "job_url": "https://jobs.intel.com/cloud-engineer",
+    "status": "Interview"
+  },
+  {
+    "company": "Red Hat",
+    "role_title": "Devops",
+    "status": "Applied",
+    "notes": "Referred by former colleague"
+  },
+  {
+    "company": "Snowflake",
+    "role_title": "Developer",
+    "status": "Offer",
+    "notes": "Compensation negotiation ongoing"
+  },
+  {
+    "company": "SAP",
+    "role_title": "Tester",
+    "status": "Rejected"
+  },
+  {
+    "company": "Datadog",
+    "role_title": "Devops",
+    "job_url": "https://careers.datadoghq.com/sre",
+    "status": "Interview",
+    "notes": "Waiting for feedback"
+  },
+  {
+    "company": "Shopify",
+    "role_title": "Developer",
+    "status": "Ghosted"
+  },
+  {
+    "company": "NVIDIA",
+    "role_title": "Devops",
+    "job_url": "https://careers.nvidia.com/infrastructure-engineer",
+    "status": "Offer",
+    "notes": "Background verification in progress"
+  },
+  {
+    "company": "MongoDB",
+    "role_title": "Developer",
+    "status": "Applied"
+  },
+  {
+    "company": "Elastic",
+    "role_title": "Tester",
+    "job_url": "https://jobs.elastic.co/qa-engineer",
+    "status": "Interview"
+  }
 ]

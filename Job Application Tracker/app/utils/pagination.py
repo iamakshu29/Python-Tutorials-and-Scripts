@@ -1,8 +1,6 @@
 # using limit_offset Pagination
 
-from fastapi import Depends
 from pydantic import BaseModel, Field
-from typing import Annotated
 from math import ceil
 
 class Pagination(BaseModel):

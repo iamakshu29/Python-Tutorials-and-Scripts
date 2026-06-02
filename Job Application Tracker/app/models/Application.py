@@ -1,50 +1,81 @@
-from sqlalchemy import (
-    Column,
-    Integer,
-    String,
-    Date,
-    DateTime,
-    Enum,
-    ForeignKey,
-    func,
-)
+from datetime import datetime
+from enum import Enum
+from uuid import UUID, uuid4
+
+from sqlalchemy import DateTime, ForeignKey, func, Uuid
+from sqlalchemy import Enum as SQLEnum
+from sqlalchemy.orm import Mapped, mapped_column
+
 from database import Base
+
+
+class RoleTitle(str, Enum):
+    DEVOPS = "Devops"
+    TESTER = "Tester"
+    DEVELOPER = "Developer"
+
+
+class ApplicationStatus(str, Enum):
+    APPLIED = "Applied"
+    INTERVIEW = "Interview"
+    OFFER = "Offer"
+    REJECTED = "Rejected"
+    GHOSTED = "Ghosted"
 
 
 class Application(Base):
     __tablename__ = "applications"
 
-    id = Column(Integer, primary_key=True, index=True, nullable=False)
-
-    # SQLAlchemy is smart enough to look up the table named "users" and the column named "id" from its internal registry of tables.
-    user_id = Column(Integer, ForeignKey("users.id"), index=True, nullable=False)
-
-    company = Column(String, nullable=False)
-
-    # name of enum...check schema.sql
-    role_title = Column(
-        Enum("Devops", "Tester", "Developer", name="role_status", create_type=True),
-        nullable=False,
+    id: Mapped[UUID] = mapped_column(
+        Uuid,
+        primary_key=True,
+        index=True,
+        default=uuid4,
     )
-    job_url = Column(String, nullable=True)
 
-    # name of enum...check schema.sql
-    status = Column(
-        Enum(
-            "Applied",
-            "Interview",
-            "Offer",
-            "Rejected",
-            "Ghosted",
-            name="application_status",
-            create_type=True,
-        ),
+    user_id: Mapped[UUID] = mapped_column(
+        ForeignKey("users.id"),
+        nullable=False,
+        index=True,
+    )
+
+    company: Mapped[str] = mapped_column(
         nullable=False,
     )
 
-    applied_date = Column(DateTime, server_default=func.now(), nullable=False)
-    notes = Column(String, nullable=True)
-    created_at = Column(DateTime, server_default=func.now(), nullable=False)
-    updated_at = Column(
-        DateTime, server_default=func.now(), onupdate=func.now(), nullable=False
+    role_title: Mapped[RoleTitle] = mapped_column(
+        SQLEnum(RoleTitle, name="role_status"),
+        nullable=False,
+    )
+
+    job_url: Mapped[str | None] = mapped_column(
+        nullable=True,
+    )
+
+    status: Mapped[ApplicationStatus] = mapped_column(
+        SQLEnum(ApplicationStatus, name="application_status"),
+        nullable=False,
+    )
+
+    applied_date: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        nullable=False,
+    )
+
+    notes: Mapped[str | None] = mapped_column(
+        nullable=True,
+    )
+
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        nullable=False,
+    )
+
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+        nullable=False,
     )

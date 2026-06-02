@@ -16,7 +16,7 @@ from jose import jwt, JWTError
 from starlette import status
 from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
 from models.User import User
-from schemas.user import UserCreate, Token
+from schemas.UserCreate import UserCreate, Token
 from utils.db_session import get_db
 from utils.logger import log_event
 import logging
@@ -104,7 +104,7 @@ is_valid = Annotated[dict, Depends(authenticate_user)]
 
 # Adding New User Details in DB with hashed password.
 @router.post("/register")
-def user_registration(user: UserCreate, db: DbDependency) -> str:
+def user_registration_with_email_password(user: UserCreate, db: DbDependency) -> str:
     if user.password:
         hashed_pass = bcrypt_context.hash(user.password)
     try:
@@ -166,8 +166,8 @@ def user_login(user: UserLoginDep, db: DbDependency):
 # def autheticate_using_google():
 
 
-@router.get("/user")
-def get_current_user_info(user: is_valid, db: DbDependency):
+@router.get("/me")
+def return_current_user_info(user: is_valid, db: DbDependency):
     if not user:
         log_event(
             logging.ERROR,

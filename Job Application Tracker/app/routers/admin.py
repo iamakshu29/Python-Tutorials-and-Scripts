@@ -3,7 +3,7 @@ from fastapi import APIRouter, HTTPException, Depends
 from routers.auth import authenticate_user
 from models.Application import Application
 from models.User import User
-from schemas.application import StatusEnum
+from schemas.ApplicationCreate import StatusEnum
 from sqlalchemy.orm import Session
 from utils.db_session import get_db
 from utils.logger import log_event
@@ -52,7 +52,7 @@ def list_all_applications(user: valid_user, db: DbDependency):
         log_event(
             logging.INFO,
             "User Not Authorized",
-            status_code=status.HTTP_401_UNAUTHORIZED,
+            status_code=status.HTTP_403_FORBIDDEN,
         )
         raise HTTPException(status_code=403, detail="User Not Authorized")
 
@@ -68,7 +68,7 @@ def get_application_stats(user: valid_user, db: DbDependency):
         log_event(
             logging.ERROR,
             "User Not Authorized",
-            status_code=status.HTTP_401_UNAUTHORIZED,
+            status_code=status.HTTP_403_FORBIDDEN,
         )
         raise HTTPException(status_code=403, detail="User Not Authorized")
 
