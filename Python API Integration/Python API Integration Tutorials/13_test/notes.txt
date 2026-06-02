@@ -1,18 +1,31 @@
-When testing simple functions 
-we test them with end result 
+# Testing Standalone (Non-HTTP) Functions
 
-like we call the exact function we are testing and then check the output is expected or not
+When testing a plain utility function (not a FastAPI route), you don't need TestClient or
+dependency overrides. You call the function directly with its arguments and assert the return value.
 
-Small example
-Let say we define a method name create_jwt
-so what we do is call create_jwt with required args and then 
-use jwt.decode to verify the signature
+Pattern:
+  1. Call the function under test with known inputs.
+  2. Assert the output matches what you expect.
 
-Check similar example of testing methods in 
-fastAPI/FastAPI_Tutorials/08_Test/ToDo_Project/test/test_auth
+Example — testing `create_jwt`:
+  token = create_jwt(username="akshat", user_id=1, role="admin", expires_delta=timedelta(minutes=20))
+  payload = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
+  assert payload["sub"] == "akshat"
+  assert payload["id"] == 1
 
-There are three test we do for method one of them is async also
+  You use jwt.decode() to verify the signature is valid and the payload contains the right data.
+  If the token was tampered with or signed with the wrong key, jwt.decode() raises JWTError — test fails.
 
-1. authenticate_user method -> return user object
-2. create_jwt method -> return JWT Token
-3. get_current_user method -> returns dict
+Reference: fastAPI/FastAPI_Tutorials/08_Test/ToDo_Project/test/test_auth
+  Three method-level tests are written there:
+
+  1. authenticate_user(username, password, db)  →  returns a User ORM object (or False if invalid creds)
+     Test: pass valid credentials → assert returned object has correct username/email.
+
+  2. create_access_token(username, user_id, role, expires_delta)  →  returns a JWT string
+     Test: decode the returned token → assert payload fields match what was passed in.
+
+  3. get_current_user(token)  →  returns a dict {"username": ..., "user_id": ..., "user_role": ...}
+     Test: this one is async, so the test function must be `async def` and decorated with
+     @pytest.mark.asyncio (requires the pytest-asyncio package).
+     Pass a valid token → assert the returned dict has the expected keys and values.

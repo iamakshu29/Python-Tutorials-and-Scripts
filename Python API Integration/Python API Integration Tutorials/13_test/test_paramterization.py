@@ -24,7 +24,10 @@ def check_url_status(url: str) -> tuple[int | str, str]:
     return ("UNKNOWN", "UNKNOWN")
 
 
-# Duplicated Test Logic
+# Section: Duplicated Test Logic (the problem parametrize solves)
+# These 5 tests all call the same function with different inputs — they are repetitive.
+# If the function signature changes, you'd need to update all 5 tests.
+# This violates DRY (Don't Repeat Yourself). See the parametrize section below.
 def test_is_valid_lower_case_a():
     assert is_valid_hostname_char("a") is True
 
@@ -45,7 +48,12 @@ def test_is_valid_underscore():
     assert is_valid_hostname_char("_") is False
 
 
-# Using parametrize marker to follow DRY
+# Section: @pytest.mark.parametrize — DRY solution
+# One test function, multiple input/output pairs. pytest runs it once per row.
+# The decorator takes:
+#   1. A comma-separated string of parameter names.
+#   2. A list of tuples — each tuple is one test case (one row of inputs).
+# pytest auto-generates a test ID from the values: test_isValid_hostname_char[a-True], etc.
 @pytest.mark.parametrize(
     "input_char, expected_result",
     [("a", True), ("0", True), ("-", True), ("A", False), ("_", False)],
@@ -54,7 +62,11 @@ def test_isValid_hostname_char(input_char: str, expected_result: bool):
     assert is_valid_hostname_char(input_char) is expected_result
 
 
-# Customizing Test IDs with pytest.param construct
+# SubSection: Customizing Test IDs with pytest.param
+# By default pytest generates IDs like "a-True", "0-True" from the values.
+# pytest.param(..., id="<name>") lets you give each case a meaningful, readable name
+# so the test report says "lower_case_letter_a" instead of just "a-True".
+# Plain tuples still work (last entry "_-False") — they just get an auto-generated ID.
 @pytest.mark.parametrize(
     "input_char, expected_result",
     [
@@ -69,6 +81,11 @@ def test_isValid_hostname_custom_params(input_char: str, expected_result: bool):
     assert is_valid_hostname_char(input_char) is expected_result
 
 
+# SubSection: Parametrize with multiple return values + combining marks per case
+# Each row has 3 values matching the 3 parameter names in the decorator string.
+# pytest.param(..., marks=(...)) lets you attach markers (xfail, skip, api, etc.)
+# to a SINGLE parametrized case without affecting the others.
+# `ids=[...]` at the decorator level gives names to ALL cases at once (alternative to per-case pytest.param id).
 @pytest.mark.parametrize(
     "url_to_check, expected_status_code, expected_status_text",
     [
@@ -88,6 +105,8 @@ def test_isValid_hostname_custom_params(input_char: str, expected_result: bool):
             "CONNECTION_ERROR",
             "CONNECTION_ERROR",
         ),
+        # This specific case is expected to fail (retry logic not yet implemented)
+        # AND is tagged with the `api` marker so it runs with: pytest -m api
         pytest.param(
             "https://pending.retries.tests",
             503,
