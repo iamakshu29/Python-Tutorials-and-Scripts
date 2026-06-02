@@ -28,3 +28,4 @@ Key Implementation Details
 8. DB Models
     For Application - DONE
     For User - DONE
+9. Dockerfile and DockerCompose - DONE
