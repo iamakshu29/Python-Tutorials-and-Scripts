@@ -44,7 +44,7 @@ class Application(Base):
     )
 
     role_title: Mapped[RoleTitle] = mapped_column(
-        SQLEnum(RoleTitle, name="role_status"),
+        SQLEnum(RoleTitle, name="role_status", values_callable=lambda x: [e.value for e in x]),
         nullable=False,
     )
 
@@ -53,7 +53,7 @@ class Application(Base):
     )
 
     status: Mapped[ApplicationStatus] = mapped_column(
-        SQLEnum(ApplicationStatus, name="application_status"),
+        SQLEnum(ApplicationStatus, name="application_status", values_callable=lambda x: [e.value for e in x]),
         nullable=False,
     )
 

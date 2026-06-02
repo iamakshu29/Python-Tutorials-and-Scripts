@@ -1,15 +1,6 @@
-from enum import Enum
 from pydantic import BaseModel
-
-
-class StatusEnum(str, Enum):
-    applied = "Applied"
-    interview = "Interview"
-    offer = "Offer"
-    rejected = "Rejected"
-    ghosted = "Ghosted"
-
+from models.Application import ApplicationStatus
 
 class ApplicationUpdate(BaseModel):
-    status: StatusEnum | None = None
+    status: ApplicationStatus | None = None
     notes: str | None = None

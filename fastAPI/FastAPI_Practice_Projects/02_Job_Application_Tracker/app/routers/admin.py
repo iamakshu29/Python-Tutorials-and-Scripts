@@ -3,7 +3,7 @@ from fastapi import APIRouter, HTTPException, Depends
 from routers.auth import authenticate_user
 from models.Application import Application
 from models.User import User
-from schemas.ApplicationCreate import StatusEnum
+from models.Application import ApplicationStatus
 from sqlalchemy.orm import Session
 from utils.db_session import get_db
 from utils.logger import log_event
@@ -78,7 +78,7 @@ def get_application_stats(user: valid_user, db: DbDependency):
         "top_companies": [],
     }
 
-    for i in StatusEnum:
+    for i in ApplicationStatus:
         response["status"][i.value] = (
             db.query(Application).filter(Application.status == i.value).count()
         )

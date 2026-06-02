@@ -1,14 +1,10 @@
 from pydantic import BaseModel, EmailStr, Field
-from enum import Enum
-
-class UserRoleEnum(str,Enum):
-    admin = "Admin"
-    user = "User"
+from models.User import UserRole
 
 class UserCreate(BaseModel):
     email: EmailStr = Field(examples=["abc@mail.com"])
-    password: str | None = Field(min_length=3)
-    role: UserRoleEnum = Field(examples=["Admin,User"])
+    password: str | None = Field(min_length=3, default=None)
+    role: UserRole = Field(examples=["Admin","User"])
 
 class Token(BaseModel):
     access_token: str

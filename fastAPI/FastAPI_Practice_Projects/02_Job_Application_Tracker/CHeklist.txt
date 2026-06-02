@@ -15,7 +15,7 @@ Key Implementation Details
 2. JWT Token - DONE
 3. Pagination Pattern - DONE
 4. JSON Logging - DONE
-5. Rate Limiting - NOT DONE
+5. Rate Limiting - NOT DONE - testing left getting some error
 6. Alembic - NOTE DONE
 7. Pydantic Schemas
     For Application

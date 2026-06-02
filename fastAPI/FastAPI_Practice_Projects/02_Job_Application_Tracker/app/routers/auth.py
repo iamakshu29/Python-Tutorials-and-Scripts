@@ -19,6 +19,7 @@ from models.User import User
 from schemas.UserCreate import UserCreate, Token
 from utils.db_session import get_db
 from utils.logger import log_event
+from uuid import UUID
 import logging
 
 router = APIRouter(prefix="/auth", tags=["auth"])
@@ -40,13 +41,17 @@ ALGORITHM = "HS256"
 
 
 # Create and return Token with expiration time.
-def create_jwt(id: int, db: DbDependency) -> str | None:
+def create_jwt(id: UUID, db: DbDependency) -> str | None:
 
     # get user_details using the id
     get_details = db.query(User).filter(User.id == id).first()
 
     if get_details:
-        payload = {"sub": get_details.email, "id": id, "role": get_details.role}
+        payload = {
+            "sub": get_details.email,
+            "id": str(id),
+            "role": get_details.role,
+        }  # UUID is not JSON Serializable.
 
         # add 20 minutes token expiration time
         minutes = 20

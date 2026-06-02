@@ -1,32 +1,29 @@
 from typing import Annotated
 from sqlalchemy.orm import Session
-from fastapi import APIRouter, Depends, HTTPException, Path, Query
+from fastapi import APIRouter, Depends, HTTPException, Path, Query, Request
 from starlette import status
-from schemas.ApplicationCreate import ApplicationCreate, StatusEnum, ApplicationResponse
+from uuid import UUID
+from schemas.ApplicationCreate import ApplicationCreate, ApplicationResponse
 from schemas.ApplicationUpdate import ApplicationUpdate
-from models.Application import Application
+from models.Application import Application, ApplicationStatus
 from utils.db_session import get_db
 from routers.auth import authenticate_user
 from utils.pagination import paginate, Pagination
 from utils.sort_data import sort_rows
 from utils.logger import log_event
+from utils.rate_limiter import limiter
 import logging
-from slowapi import Limiter
-from slowapi.util import get_remote_address
 
 router = APIRouter(prefix="/applications", tags=["app"])
 
 DbDependency = Annotated[Session, Depends(get_db)]
 valid_user = Annotated[dict, Depends(authenticate_user)]
 
-# rate limit logic
-limiter = Limiter(key_func=get_remote_address)
 
-
-@limiter.limit("20/hour")
 @router.post("/", status_code=status.HTTP_201_CREATED)
-async def create_job_app(
-    user: valid_user, job_app: ApplicationCreate, db: DbDependency
+@limiter.limit("20/hour")
+def create_job_app(
+    request: Request, user: valid_user, job_app: ApplicationCreate, db: DbDependency
 ):
     # dict is replace with model_dump in newer versions
     if not user:
@@ -36,7 +33,7 @@ async def create_job_app(
             status_code=status.HTTP_401_UNAUTHORIZED,
         )
         raise HTTPException(status_code=401, detail="Authentication Failed")
-    job_app = Application(**job_app.model_dump(), user_id=user.get("id"))
+    job_app = Application(**job_app.model_dump(mode="json"), user_id=user.get("id"))
     db.add(job_app)
 
     log_event(logging.INFO, "Application Posted", status_code=status.HTTP_201_CREATED)
@@ -57,10 +54,10 @@ def create_multiple_jobs_app(
         raise HTTPException(status_code=401, detail="Authentication Failed")
 
     applications = [
-        Application(**job.model_dump(), user_id=user.get("id")) for job in job_apps
+        Application(**job.model_dump(mode="json"), user_id=user.get("id")) for job in job_apps
     ]
 
-    db.bulk_save_objects(applications)
+    db.add_all(applications)
 
     log_event(
         logging.INFO, "Bulk insert successful", status_code=status.HTTP_201_CREATED
@@ -74,7 +71,7 @@ def create_multiple_jobs_app(
 def list_job_app(
     user: valid_user,
     db: DbDependency,
-    job_status: StatusEnum | None = Query(default=None),
+    job_status: ApplicationStatus | None = Query(default=None),
     company: str | None = Query(default=None, min_length=2),
     sort_by: str | None = Query(
         default=None, examples=["applied_date", "created_at", "company"]
@@ -125,7 +122,7 @@ def list_job_app(
 
 # get job_app by id
 @router.get("/{id}", response_model=ApplicationResponse)
-def get_single_job_app(user: valid_user, db: DbDependency, id: int = Path(gt=0)):
+def get_single_job_app(user: valid_user, db: DbDependency, id: UUID = Path()):
     if not user:
         log_event(
             logging.ERROR,
@@ -163,7 +160,7 @@ def update_job_app(
     user: valid_user,
     db: DbDependency,
     update_attributes: ApplicationUpdate,
-    id: int = Path(gt=0),
+    id: UUID = Path(),
 ) -> str:
     if not user:
         log_event(
@@ -185,7 +182,7 @@ def update_job_app(
             status_code=status.HTTP_404_NOT_FOUND, detail="Application not found"
         )
 
-    if get_application.user_id != user.get("id"):
+    if str(get_application.user_id) != user.get("id"):
         log_event(
             logging.ERROR, "User not Authorized", status_code=status.HTTP_403_FORBIDDEN
         )
@@ -196,7 +193,10 @@ def update_job_app(
     update_data = update_attributes.model_dump(exclude_unset=True)
     for key, value in update_data.items():
         setattr(get_application, key, value)
-    # db.add(get_application)
+
+    db.add(get_application)
+    db.commit()
+    db.refresh(get_application)
     log_event(
         logging.INFO,
         "Job Application Updated Successfully",
@@ -207,7 +207,7 @@ def update_job_app(
 
 # delete job_app by id
 @router.delete("/{id}")
-def delete_job_app(user: valid_user, db: DbDependency, id: int = Path(gt=0)) -> str:
+def delete_job_app(user: valid_user, db: DbDependency, id: UUID = Path()) -> str:
     if not user:
         log_event(
             logging.ERROR,
