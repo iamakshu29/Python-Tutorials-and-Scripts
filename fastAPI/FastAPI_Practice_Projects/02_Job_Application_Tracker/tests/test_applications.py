@@ -9,10 +9,10 @@ app.dependency_overrides[get_db] = override_get_db
 
 
 # @router.post("/")
-def test_create_job_app_valid_success(db, creating_app, auth_override):
+def test_create_job_app_valid_success(db, creating_app, creating_user, auth_override):
     auth_override(
         {
-            "id": 1,
+            "id": str(creating_user.id),
             "email": "abc@gmail.com",
             "role": "Admin",
         }
@@ -20,7 +20,7 @@ def test_create_job_app_valid_success(db, creating_app, auth_override):
 
     payload = {"company": "XYZ", "role_title": "Developer", "status": "Applied"}
 
-    response = client.post("/app", json=payload)
+    response = client.post("/applications/", json=payload)
 
     assert response.status_code == 201
     assert response.json() == {"message": "Application Posted"}
@@ -30,7 +30,7 @@ def test_create_job_app_unauthorized(db, creating_app, auth_override):
     auth_override(None)
     payload = {"company": "XYZ", "role_title": "Developer", "status": "Applied"}
 
-    response = client.post("/app", json=payload)
+    response = client.post("/applications/", json=payload)
 
     assert response.status_code == 401
     assert response.json() == {"detail": "Authentication Failed"}

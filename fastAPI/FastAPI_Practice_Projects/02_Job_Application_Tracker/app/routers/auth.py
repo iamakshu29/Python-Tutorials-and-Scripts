@@ -16,7 +16,7 @@ from jose import jwt, JWTError
 from starlette import status
 from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
 from models.User import User
-from schemas.UserCreate import UserCreate, Token
+from schemas.UserCreate import UserCreate, Token, UserResponse
 from utils.db_session import get_db
 from utils.logger import log_event
 from uuid import UUID
@@ -171,7 +171,7 @@ def user_login(user: UserLoginDep, db: DbDependency):
 # def autheticate_using_google():
 
 
-@router.get("/me")
+@router.get("/me", response_model=UserResponse)
 def return_current_user_info(user: is_valid, db: DbDependency):
     if not user:
         log_event(
@@ -181,7 +181,7 @@ def return_current_user_info(user: is_valid, db: DbDependency):
         )
         raise HTTPException(status_code=401, detail="Authentication Failed")
     try:
-        get_data = db.query(User).filter(User.id == user.get("id")).first()
+        get_data = db.query(User).filter(User.id == UUID(user.get("id"))).first()
 
         log_event(logging.INFO, "Fields Retrieved", status_code=status.HTTP_200_OK)
         return get_data

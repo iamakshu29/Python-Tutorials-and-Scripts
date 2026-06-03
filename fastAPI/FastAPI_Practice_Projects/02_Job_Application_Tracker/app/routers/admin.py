@@ -7,6 +7,8 @@ from models.Application import ApplicationStatus
 from sqlalchemy.orm import Session
 from utils.db_session import get_db
 from utils.logger import log_event
+from schemas.UserCreate import UserResponse
+from schemas.ApplicationCreate import ApplicationResponse, StatsResponse
 import logging
 from starlette import status
 
@@ -17,7 +19,7 @@ valid_user = Annotated[dict, Depends(authenticate_user)]
 
 
 # list all user details to admin user
-@router.get("/users")
+@router.get("/users", response_model=list[UserResponse])
 def list_users(user: valid_user, db: DbDependency):
     if not user:
         log_event(
@@ -46,7 +48,7 @@ def list_users(user: valid_user, db: DbDependency):
 
 
 # list all application details to admin user
-@router.get("/applications")
+@router.get("/applications", response_model=list[ApplicationResponse])
 def list_all_applications(user: valid_user, db: DbDependency):
     if user.get("role") != "Admin":
         log_event(
@@ -62,7 +64,7 @@ def list_all_applications(user: valid_user, db: DbDependency):
     return get_applications
 
 
-@router.get("/stats")
+@router.get("/stats", response_model=StatsResponse)
 def get_application_stats(user: valid_user, db: DbDependency):
     if user.get("role") != "Admin":
         log_event(

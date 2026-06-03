@@ -1,8 +1,8 @@
-from datetime import datetime
+from datetime import datetime, date
 from enum import Enum
 from uuid import UUID, uuid4
 
-from sqlalchemy import DateTime, ForeignKey, func, Uuid
+from sqlalchemy import Date, DateTime, ForeignKey, func, Uuid
 from sqlalchemy import Enum as SQLEnum
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -57,9 +57,9 @@ class Application(Base):
         nullable=False,
     )
 
-    applied_date: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True),
-        server_default=func.now(),
+    applied_date: Mapped[date] = mapped_column(
+        Date,
+        server_default=func.current_date(),
         nullable=False,
     )
 

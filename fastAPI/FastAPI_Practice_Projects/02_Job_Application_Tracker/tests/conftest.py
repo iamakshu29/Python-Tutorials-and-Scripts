@@ -1,4 +1,5 @@
 import pytest
+from uuid import uuid4
 from models.User import User
 from models.Application import Application
 from routers.auth import bcrypt_context, authenticate_user
@@ -6,11 +7,13 @@ from .utils import TestingSessionLocal
 from main import app
 from datetime import datetime, timezone, date
 
+TEST_USER_UUID = uuid4()
+
 
 @pytest.fixture
 def creating_user():
     user = User(
-        id=1,
+        id=TEST_USER_UUID,
         email="abc@gmail.com",
         hashed_password=bcrypt_context.hash("admin123"),
         role="Admin",
@@ -42,8 +45,8 @@ def auth_override():
 @pytest.fixture
 def creating_app():
     app = Application(
-        id=1,
-        user_id=1,
+        id=uuid4(),
+        user_id=TEST_USER_UUID,
         company="XYZ",
         role_title="Developer",
         status="Applied",

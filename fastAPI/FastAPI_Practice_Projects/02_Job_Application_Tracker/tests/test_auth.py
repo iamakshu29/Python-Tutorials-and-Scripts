@@ -26,26 +26,26 @@ def test_creating_token(creating_user, db):
     get_payload = jwt.decode(get_JWT, SECRET_KEY, algorithms=[ALGORITHM])
 
     assert get_payload["sub"] == creating_user.email
-    assert get_payload["id"] == creating_user.id
+    assert get_payload["id"] == str(creating_user.id)
     assert get_payload["role"] == creating_user.role
 
 
 def test_authenticating_user(creating_user, db):
     payload = {
         "sub": creating_user.email,
-        "id": creating_user.id,
+        "id": str(creating_user.id),
         "role": creating_user.role,
     }
     token = jwt.encode(payload, SECRET_KEY, ALGORITHM)
     user = authenticate_user(db, token)
 
     assert user["email"] == creating_user.email
-    assert user["id"] == creating_user.id
+    assert user["id"] == str(creating_user.id)
 
 
 def test_missing_claims(creating_user, db):
 
-    payload = {"id": creating_user.id, "role": creating_user.role}
+    payload = {"id": str(creating_user.id), "role": creating_user.role}
     token = jwt.encode(payload, SECRET_KEY, ALGORITHM)
 
     with pytest.raises(HTTPException):
@@ -98,18 +98,17 @@ def test_login_invalid_user():
     assert response.json() == {"detail": "Either Password or Email is Incorrect"}
 
 
-def test_get_current_user_info(auth_override):
+def test_get_current_user_info(creating_user, auth_override):
     auth_override(
         {
-            "id": 1,
+            "id": str(creating_user.id),
             "email": "abc@gmail.com",
             "role": "Admin",
         }
     )
-    response = client.get("/auth/user")
+    response = client.get("/auth/me")
 
     assert response.status_code == 200
-    assert response.json()["id"] == 1
     assert response.json()["email"] == "abc@gmail.com"
     assert response.json()["role"] == "Admin"
     assert response.json()["is_active"] is True

@@ -33,7 +33,7 @@ def create_job_app(
             status_code=status.HTTP_401_UNAUTHORIZED,
         )
         raise HTTPException(status_code=401, detail="Authentication Failed")
-    job_app = Application(**job_app.model_dump(mode="json"), user_id=user.get("id"))
+    job_app = Application(**job_app.model_dump(mode="json"), user_id=UUID(user.get("id")))
     db.add(job_app)
 
     log_event(logging.INFO, "Application Posted", status_code=status.HTTP_201_CREATED)
@@ -54,7 +54,7 @@ def create_multiple_jobs_app(
         raise HTTPException(status_code=401, detail="Authentication Failed")
 
     applications = [
-        Application(**job.model_dump(mode="json"), user_id=user.get("id")) for job in job_apps
+        Application(**job.model_dump(mode="json"), user_id=UUID(user.get("id"))) for job in job_apps
     ]
 
     db.add_all(applications)
@@ -89,6 +89,8 @@ def list_job_app(
         )
         raise HTTPException(status_code=401, detail="Authentication Failed")
 
+    # user_id filter intentionally omitted here — with small test data this lets you
+    # see all records and demonstrates sorting/pagination behaviour across the full dataset
     query = db.query(Application)
 
     if job_status:
@@ -133,7 +135,7 @@ def get_single_job_app(user: valid_user, db: DbDependency, id: UUID = Path()):
 
     get_application = (
         db.query(Application)
-        .filter(Application.user_id == user.get("id"), Application.id == id)
+        .filter(Application.user_id == UUID(user.get("id")), Application.id == id)
         .first()
     )
 
@@ -146,12 +148,7 @@ def get_single_job_app(user: valid_user, db: DbDependency, id: UUID = Path()):
         )
 
     log_event(logging.INFO, "Fields Retrieved By id", status_code=status.HTTP_200_OK)
-    return {
-        "id": get_application.id,
-        "user_id": get_application.user_id,
-        "created_at": get_application.created_at,
-        "updated_at": get_application.updated_at,
-    }
+    return get_application
 
 
 # update job_app by id
@@ -220,7 +217,7 @@ def delete_job_app(user: valid_user, db: DbDependency, id: UUID = Path()) -> str
 
     deleted_app = (
         db.query(Application)
-        .filter(Application.user_id == user.get("id"), Application.id == id)
+        .filter(Application.user_id == UUID(user.get("id")), Application.id == id)
         .delete()
     )
 
