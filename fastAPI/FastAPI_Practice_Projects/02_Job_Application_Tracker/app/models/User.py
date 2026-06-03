@@ -30,7 +30,9 @@ class User(Base):
     google_id: Mapped[str | None] = mapped_column(unique=True, nullable=True)
 
     role: Mapped[UserRole] = mapped_column(
-        SQLEnum(UserRole, name="user_role", values_callable=lambda x: [e.value for e in x]),
+        SQLEnum(
+            UserRole, name="user_role", values_callable=lambda x: [e.value for e in x]
+        ),
         nullable=False,
     )
 
