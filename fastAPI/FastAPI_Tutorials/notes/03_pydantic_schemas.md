@@ -152,3 +152,18 @@ class TodoUpdate(BaseModel):
 **Context matters:**
 - Use `model_dump(exclude_unset=True)` in the route to only get fields the client actually sent — ignores fields the client left out.
 - `exclude_unset=True` vs `exclude_none=True`: prefer `exclude_unset` for PATCH because a client may intentionally send `null` to clear a field.
+
+---
+
+## `response_model` — Single Object vs List
+
+| Route returns | `response_model` |
+|---|---|
+| `.first()` / single object | `Schema` |
+| `.all()` / multiple rows | `list[Schema]` |
+| aggregate dict | custom schema matching that dict |
+
+**Gotchas:**
+- Wrong type → FastAPI validation error at runtime (e.g. `list[Schema]` on a `.first()` call)
+- Fields not in the schema are silently dropped — this is how `hashed_password` is hidden
+- `from_attributes=True` required on response schemas so Pydantic can read ORM object attributes
