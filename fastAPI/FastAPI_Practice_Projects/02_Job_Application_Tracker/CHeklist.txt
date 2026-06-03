@@ -26,4 +26,4 @@ Key Implementation Details
     For Application - DONE
     For User - DONE
 9. Dockerfile and DockerCompose - DONE
-10. Tests - Almost DONE
+10. Tests - DONE
