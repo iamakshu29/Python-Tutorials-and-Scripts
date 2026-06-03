@@ -63,7 +63,7 @@ def get_all_urls_by(db: DbDependency, cred: credentials):
     return url_data
 
 
-# Delete Url by Alias/Short_code
+# Delete Url by Alias/Short_code - Admin Only
 @router.delete("/urls/{alias}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_url(
     db: DbDependency, cred: credentials, alias=Path(min_length=7, max_length=7)

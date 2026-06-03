@@ -43,7 +43,7 @@ def create_user(db: DbDependency, user: UserCreate):
 
 
 # Get User details by username and Admin can access all details
-@router.get("/me")
+@router.get("/")
 def get_user_by_username(db: DbDependency, cred: credentials):
     try:
         user = authenticate_user(cred.username, cred.password, db)

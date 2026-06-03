@@ -1,14 +1,54 @@
-from sqlalchemy import Column, Integer, String, Boolean, DateTime, Enum, func
+from sqlalchemy import func, Uuid
+from sqlalchemy.orm import mapped_column, Mapped
+from datetime import datetime
+from sqlalchemy import Enum as SQLEnum
+from enum import Enum
+from uuid import UUID, uuid4
+
 from database import Base
+
+
+class UserRole(str, Enum):
+    admin = "Admin"
+    user = "User"
+
+
+class UserSubscription(str, Enum):
+    basic = "Basic"
+    premium = "Premium"
+
 
 class User(Base):
     __tablename__ = "users"
 
-    id = Column(Integer, primary_key = True, nullable = False, index = True)
-    email = Column(String, unique=True, nullable = False, index=True)
-    username = Column(String, unique=True, nullable=False, index=True)
-    hashed_password = Column(String, nullable = False)
-    role = Column(Enum("Admin","User", name="user_role", create_type=True), nullable = False)
-    subscription_type = Column(Enum("Basic","Premium",name="user_subscription", create_type=True),default="Basic", nullable = False)
-    is_active = Column(Boolean, nullable = False, default = True)
-    created_at = Column(DateTime(timezone=True),server_default=func.now(), nullable = False)
+    id: Mapped[UUID] = mapped_column(
+        Uuid, primary_key=True, nullable=False, index=True, default=uuid4
+    )
+
+    email: Mapped[str] = mapped_column(unique=True, nullable=False, index=True)
+
+    username: Mapped[str] = mapped_column(unique=True, nullable=False, index=True)
+
+    hashed_password: Mapped[str] = mapped_column(nullable=False)
+
+    role: Mapped[UserRole] = mapped_column(
+        SQLEnum(
+            UserRole, name="user_role", values_callable=lambda x: [e.value for e in x]
+        ),
+        nullable=False,
+    )
+
+    subscription_type: Mapped[UUID] = mapped_column(
+        SQLEnum(
+            UserSubscription,
+            name="user_subscription",
+            values_callable=lambda x: [e.value for e in x],
+        ),
+        nullable=False,
+    )
+
+    is_active: Mapped[bool] = mapped_column(nullable=False, default=True)
+
+    created_at: Mapped[datetime] = mapped_column(
+        server_default=func.now(), nullable=False
+    )

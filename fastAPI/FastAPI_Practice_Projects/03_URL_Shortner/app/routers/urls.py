@@ -91,7 +91,7 @@ def shorten_url(payload: URLCreate, db: DbDependency, cred: credentials):
     return get_response(db, alias)
 
 
-# Get All Url by Username
+# Get All Url created by the authenticated user.
 @router.get("/")
 def get_all_urls_by_username(db: DbDependency, cred: credentials):
     user = authenticate_user(cred.username, cred.password, db)
@@ -135,7 +135,7 @@ def get_url(
     return data
 
 
-# Get Url by Alias/Short Code
+# Upgrade/renew an expired URL. 
 @router.patch("/upgrade/{alias}")
 def upgrade_expiry_for_url(
     db: DbDependency, cred: credentials, alias: str = Path(min_length=7, max_length=7)

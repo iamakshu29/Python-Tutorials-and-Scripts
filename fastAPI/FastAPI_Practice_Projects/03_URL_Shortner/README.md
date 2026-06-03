@@ -84,11 +84,11 @@ url-shortener/
 ### Stats Endpoints (`/stats`)
 
 - `GET /stats/{alias}` - Access a short URL, increment its click count, and return its details (Simulates redirection/analytics access).
-- `GET /stats/{id}` - Retrieve URL details by its database ID.
 
 ### Admin Endpoints (`/admin`) *(Pending Integration)*
 
-- `GET /admin/` - List all users (Requires Admin role).
+- `GET /admin/user` - List all users (Requires Admin role).
+- `GET /admin/url` - List all urls (Requires Admin role).
 - `DELETE /admin/{alias}` - Delete a short URL (Requires Admin role).
 
 ---

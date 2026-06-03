@@ -1,11 +1,14 @@
 from datetime import datetime
-from pydantic import BaseModel, Field, HttpUrl
+from pydantic import BaseModel, HttpUrl
+
+
 class URLResponse(BaseModel):
     short_code: str
     short_url: HttpUrl
-    original_url: HttpUrl 
-    created_at: datetime 
-    expires_at: datetime 
+    original_url: HttpUrl
+    created_at: datetime
+    expires_at: datetime
+
 
 """
 {
