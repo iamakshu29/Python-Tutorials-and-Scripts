@@ -1,0 +1,22 @@
+ENV Variables is left
+
+.env 
+.config
+
+for Notes.md
+1. add the @property in notes which we use to check alias is expired or not in url.py add notes for it
+2. Add redirect in notes also or leave it I guess
+
+for 03_url_shortnere specific
+1. CHeck redirect thingy
+2. Update the readme.md for 03_url_shortnere as 02_job_application_tracker
+3. Add rate_limiter and pagination in url_shortner also.
+
+NEW PRoject
+1. Create a project like platofrm engineer does
+like it used fastAPI but for devops purposes...something like that..
+
+REST Notes
+1. complete Google AUTH
+2. Create tests for 03_url_shortner
+3. Also do webhook related project and learn webhook, redis ...and what else..
