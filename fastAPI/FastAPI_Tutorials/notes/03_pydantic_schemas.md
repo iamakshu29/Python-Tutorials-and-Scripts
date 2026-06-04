@@ -2,6 +2,8 @@
 
 <!-- Stack: FastAPI 0.115 | Pydantic v2 | Python 3.12 -->
 
+> **Best Practice:** Always define a dedicated Pydantic schema for every request body and response model in your API. Never expose raw SQLAlchemy models directly — schemas give you control over validation, serialization, and what data the client can send or receive.
+
 ---
 
 ## Why Pydantic Schemas Exist (separate from SQLAlchemy models)
@@ -133,5 +135,3 @@ class TodoUpdate(BaseModel):
 - `exclude_unset=True` vs `exclude_none=True`: prefer `exclude_unset` for PATCH because a client may intentionally send `null` to clear a field.
 
 ---
-
-** Basically State that all the return response and request body it is recommended to create Pydantic Schema (Add this at TOP I guess or where you think it is poreferred to mention)
