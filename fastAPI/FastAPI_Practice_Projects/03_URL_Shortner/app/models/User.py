@@ -38,12 +38,13 @@ class User(Base):
         nullable=False,
     )
 
-    subscription_type: Mapped[UUID] = mapped_column(
+    subscription_type: Mapped[UserSubscription] = mapped_column(
         SQLEnum(
             UserSubscription,
             name="user_subscription",
             values_callable=lambda x: [e.value for e in x],
         ),
+        default="Basic",
         nullable=False,
     )
 

@@ -3,10 +3,10 @@ from models.User import UserRole
 
 
 class UserCreate(BaseModel):
-    email: EmailStr = Field(examples=["abc@mail.com"])
+    email: EmailStr
     username: str
-    password: str = Field(min_length=7)
-    role: UserRole = Field(examples=["Admin,User"])
+    role: str
+    subscription_type: str
 
 
 class Token(BaseModel):

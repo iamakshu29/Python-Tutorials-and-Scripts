@@ -11,6 +11,7 @@ from utils.authenticate import authenticate_user
 from passlib.context import CryptContext
 
 router = APIRouter(prefix="/user", tags=["user"])
+
 DbDependency = Annotated[Session, Depends(get_db)]
 security = HTTPBasic()
 credentials = Annotated[HTTPBasicCredentials, Depends(security)]
@@ -43,7 +44,7 @@ def create_user(db: DbDependency, user: UserCreate):
 
 
 # Get User details by username and Admin can access all details
-@router.get("/")
+@router.get("/", response_model=UserCreate)
 def get_user_by_username(db: DbDependency, cred: credentials):
     try:
         user = authenticate_user(cred.username, cred.password, db)
@@ -77,6 +78,9 @@ def upgrade_subscription(subscription: str, db: DbDependency, cred: credentials)
         if get_details.subscription_type == "Premium" and subscription == "Premium":
             return "Already has Premium Membership"
         elif get_details.subscription_type == "Premium" and subscription == "Basic":
+            get_details.subscription_type = subscription
+            db.commit()
+            db.refresh(get_details)
             return "Downgrade to Basic Membership"
         elif get_details.subscription_type == "Basic" and subscription == "Basic":
             return "Already has Basic Membership"

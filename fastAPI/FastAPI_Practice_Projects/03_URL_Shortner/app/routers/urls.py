@@ -9,7 +9,7 @@ from datetime import timedelta, timezone, datetime
 from utils.alias import generate_short_code
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from utils.db_session import get_db
-from schemas.url_response import URLResponse
+from schemas.url_response import URLResponse, BulkURLResponse
 from models.User import User
 from utils.authenticate import authenticate_user
 
@@ -31,7 +31,7 @@ def get_response(db: DbDependency, alias):
 
 
 # Create Short_url
-@router.post("/", status_code=status.HTTP_201_CREATED, response_model=URLResponse)
+@router.post("/", status_code=status.HTTP_201_CREATED)
 def shorten_url(payload: URLCreate, db: DbDependency, cred: credentials):
     try:
         user = authenticate_user(cred.username, cred.password, db)
@@ -92,7 +92,7 @@ def shorten_url(payload: URLCreate, db: DbDependency, cred: credentials):
 
 
 # Get All Url created by the authenticated user.
-@router.get("/")
+@router.get("/", response_model=list[BulkURLResponse])
 def get_all_urls_by_username(db: DbDependency, cred: credentials):
     user = authenticate_user(cred.username, cred.password, db)
 
@@ -111,7 +111,7 @@ def get_all_urls_by_username(db: DbDependency, cred: credentials):
 
 
 # Get Url by Alias/Short Code of logged in username
-@router.get("/{alias}")
+@router.get("/{alias}", response_model=URLResponse)
 def get_url(
     db: DbDependency, cred: credentials, alias: str = Path(min_length=7, max_length=7)
 ):
@@ -127,15 +127,21 @@ def get_url(
     get_id = db.query(User).filter(User.username == cred.username).first()
     data = db.query(Url).filter(Url.user_id == get_id.id, Url.urlCode == alias).first()
     if data is None:
-        return "No Alias Present"
+        raise HTTPException(
+        status_code=status.HTTP_404_NOT_FOUND,
+        detail="No Alias Present"
+    )
 
-    if data.expired:
-        return "URL Expired"
+    if data.expires_at < datetime.now(timezone.utc):
+        raise HTTPException(
+            status_code=status.HTTP_410_GONE,
+            detail="URL Expired"
+        )
 
     return data
 
 
-# Upgrade/renew an expired URL. 
+# Upgrade/renew an expired URL.
 @router.patch("/upgrade/{alias}")
 def upgrade_expiry_for_url(
     db: DbDependency, cred: credentials, alias: str = Path(min_length=7, max_length=7)

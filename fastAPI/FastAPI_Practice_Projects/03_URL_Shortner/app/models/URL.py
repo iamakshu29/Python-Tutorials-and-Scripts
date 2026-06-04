@@ -1,6 +1,6 @@
-from sqlalchemy import Boolean, ForeignKey, func, DateTime
+from sqlalchemy import ForeignKey, func, DateTime
 from uuid import UUID
-from datetime import datetime
+from datetime import datetime, timezone
 from sqlalchemy.orm import mapped_column, Mapped
 
 from database import Base
@@ -27,6 +27,8 @@ class Url(Base):
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )
 
-    expired: Mapped[datetime] = mapped_column(Boolean, default=False)
-
     user_id: Mapped[UUID] = mapped_column(ForeignKey("users.id"), index=True)
+
+    @property
+    def expired(self):
+        return self.expires_at < datetime.now(timezone.utc)

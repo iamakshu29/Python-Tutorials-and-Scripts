@@ -1,13 +1,15 @@
 from datetime import datetime
 from pydantic import BaseModel, Field, HttpUrl
 
+
 class statsSchema(BaseModel):
-    original_url: HttpUrl
     short_code: str
+    original_url: HttpUrl
     click_count: int = Field(default=0)
     created_at: datetime
     expires_at: datetime
     last_accessed_at: datetime
+
 
 """
 {

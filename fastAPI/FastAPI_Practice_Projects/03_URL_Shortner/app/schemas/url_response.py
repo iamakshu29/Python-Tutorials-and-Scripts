@@ -1,21 +1,23 @@
 from datetime import datetime
-from pydantic import BaseModel, HttpUrl
+from pydantic import BaseModel, HttpUrl, ConfigDict
+from uuid import UUID
 
 
 class URLResponse(BaseModel):
-    short_code: str
-    short_url: HttpUrl
+    model_config = ConfigDict(from_attributes=True)
+
+    urlCode: str
+    original_url: HttpUrl
+    created_at: datetime
+    last_accessed_at: datetime
+    expires_at: datetime
+    expired: bool
+
+
+class BulkURLResponse(BaseModel):
+    urlCode: str
     original_url: HttpUrl
     created_at: datetime
     expires_at: datetime
-
-
-"""
-{
-  "short_code": "my-link",
-  "short_url": "http://localhost:8000/my-link",
-  "original_url": "https://www.example.com/very/long/path?query=param",
-  "created_at": "2024-01-15T10:30:00Z",
-  "expires_at": "2024-01-22T10:30:00Z"
-}
-"""
+    last_accessed_at: datetime
+    user_id: UUID
