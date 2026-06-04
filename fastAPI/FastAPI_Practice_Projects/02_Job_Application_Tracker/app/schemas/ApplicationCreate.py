@@ -13,7 +13,7 @@ class ApplicationCreate(BaseModel):
 
 # Get all the fields from ApplicationCreate and add additional fields for response, which we want to return in response after creating application. This is useful when we want to return the created application details in response after creating application.
 class ApplicationResponse(ApplicationCreate):
-    model_config = ConfigDict(from_attributes=True)
+    model_config = ConfigDict(from_attributes=True) # allows Pydantic to read data from ORM
 
     id: UUID
     user_id: UUID
