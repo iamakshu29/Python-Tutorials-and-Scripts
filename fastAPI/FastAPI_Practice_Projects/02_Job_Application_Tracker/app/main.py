@@ -10,9 +10,9 @@ from utils.rate_limiter import limiter
 import os
 
 
-# When pytest runs, using testclient It uses its own SQLite DB but without asynccontextmanager even while running test, it tried to connect PostgreSQL
-# But No PostgreSQL running during tests -> silent connection error
-# Moving into lifespan means it only runs when FastAPI actually starts up.
+# When pytest runs with testclient, it uses its own SQLite database. However, without asynccontextmanager,
+# the application attempts to connect to PostgreSQL even during tests. Since PostgreSQL is not running during tests,
+# this results in a silent connection error. By moving initialization into lifespan, it only executes when FastAPI starts.
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     Base.metadata.create_all(bind=engine)
