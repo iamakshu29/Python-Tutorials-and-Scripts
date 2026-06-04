@@ -68,6 +68,12 @@ url-shortener/
 
 *Note: Most endpoints require HTTP Basic Authentication.*
 
+### Admin Endpoints (`/admin`)
+
+- `GET /admin/user` - List all users (Requires Admin role).
+- `GET /admin/url` - List all urls (Requires Admin role).
+- `DELETE /admin/{alias}` - Delete a short URL (Requires Admin role).
+
 ### User Endpoints (`/user`)
 
 - `POST /user/` - Create a new user (Requires email, username, password, and role).
@@ -79,17 +85,17 @@ url-shortener/
 - `POST /url/` - Create a short URL. Optional custom `urlCode` and `expires_in` (minutes).
 - `GET /url/` - Get all shortened URLs created by the authenticated user.
 - `GET /url/{alias}` - Retrieve details of a specific URL by its alias.
-- `GET /url/upgrade/{alias}` - Upgrade/renew an expired URL. Extends expiry time or generates a new alias depending on subscription tier.
+- `PATCH /url/upgrade/{alias}` - Upgrade/renew an expired URL. Extends expiry time or generates a new alias depending on subscription tier.
 
 ### Stats Endpoints (`/stats`)
 
 - `GET /stats/{alias}` - Access a short URL, increment its click count, and return its details (Simulates redirection/analytics access).
 
-### Admin Endpoints (`/admin`) *(Pending Integration)*
+### Redirect Endpoints (`/redirect`)
 
-- `GET /admin/user` - List all users (Requires Admin role).
-- `GET /admin/url` - List all urls (Requires Admin role).
-- `DELETE /admin/{alias}` - Delete a short URL (Requires Admin role).
+- `GET /redirect/{alias}` - Redirect the URL with the short_url.
+
+
 
 ---
 
