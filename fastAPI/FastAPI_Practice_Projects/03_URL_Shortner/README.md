@@ -95,7 +95,34 @@ url-shortener/
 
 - `GET /redirect/{alias}` - Redirect the URL with the short_url.
 
+---
 
+## Database Models
+
+### User
+
+| Column | Type | Notes |
+|---|---|---|
+| id | UUID | Primary key, auto-generated |
+| email | String | Unique, indexed |
+| username | String | Unique, indexed |
+| hashed_password | String | bcrypt hashed |
+| role | Enum | `Admin` or `User` |
+| subscription_type | Enum | `Basic` or `Premium` |
+| is_active | Boolean | Default `True` |
+| created_at | DateTime | Auto set on insert |
+
+### URL
+
+| Column | Type | Notes |
+|---|---|---|
+| urlCode | String | Primary key, alias for the short URL |
+| original_url | String | The full destination URL |
+| click_count | Integer | Default `0`, incremented on each access |
+| created_at | DateTime | Auto set on insert |
+| expires_at | DateTime | Expiry time (7 min for Basic, 70 min for Premium) |
+| last_accessed_at | DateTime | Updated on each redirect |
+| user_id | UUID | FK → User.id |
 
 ---
 
