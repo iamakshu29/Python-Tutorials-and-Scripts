@@ -281,6 +281,106 @@ async def create_application(request: Request, ...):
 
 ---
 
+## Getting Started
+
+### Prerequisites
+
+- Python 3.11+
+- PostgreSQL running locally, or use Docker Compose (recommended)
+- `pip` or a virtual environment manager
+
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/your-username/job-application-tracker.git
+cd job-application-tracker
+```
+
+### 2. Set up environment variables
+
+```bash
+cp .env.example .env
+```
+
+Edit `.env`:
+
+```env
+DATABASE_URL=postgresql://postgres:password@localhost:5432/job_tracker
+SECRET_KEY=your-secret-key
+GOOGLE_CLIENT_ID=your-google-client-id
+GOOGLE_CLIENT_SECRET=your-google-client-secret
+```
+
+### 3. Run with Docker Compose (recommended)
+
+```bash
+docker-compose up --build
+```
+
+This starts both the API server and PostgreSQL. The API will be available at `http://localhost:8000`.
+
+### 4. Run locally without Docker
+
+```bash
+# Create and activate virtual environment
+python -m venv venv
+source venv/bin/activate        # Windows: venv\Scripts\activate
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Apply DB migrations
+alembic upgrade head
+
+# Start the server
+uvicorn app.main:app --reload
+```
+
+---
+
+## Running Tests
+
+```bash
+pytest tests/ -v
+```
+
+Tests use an in-memory SQLite database — no external services required.
+
+---
+
+## Key Concepts Practiced
+
+This project was intentionally built to get hands-on with specific backend engineering fundamentals:
+
+- **REST API design** — resource-oriented routes, correct HTTP status codes (`200`, `201`, `400`, `401`, `403`, `404`)
+- **Authentication & Authorization** — JWT-based auth, Google OAuth2, role-based access control
+- **ORM usage** — SQLAlchemy models, relationships, and query patterns
+- **Schema validation** — separating DB models from API schemas using Pydantic v2
+- **Database migrations** — Alembic for versioned, repeatable schema changes
+- **Environment config management** — 12-factor app config via `.env` and Pydantic Settings
+- **Containerization** — multi-service Docker Compose setup
+- **Pagination & Filtering** — custom pagination pattern with query params
+- **Rate Limiting** — per-IP request limiting via `slowapi`
+- **Structured Logging** — JSON-formatted logs with `logging` module
+
+---
+
+## Potential Improvements (Not Yet Implemented)
+
+- Email verification on registration
+- Refresh token support
+- WebSocket notifications for status changes
+- Export applications to CSV/PDF
+- Advanced analytics dashboard
+
+---
+
+## License
+
+MIT
+
+---
+
 ## Alembic Migrations — Planned Sequence
 
 | Migration                 | What it does                                                           |
