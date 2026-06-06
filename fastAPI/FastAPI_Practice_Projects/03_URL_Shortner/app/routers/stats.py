@@ -59,12 +59,6 @@ async def get_stats(db: DbDependency, alias: str, cred: credentials):
         )
         raise HTTPException(status_code=status.HTTP_410_GONE, detail="URL expired")
 
-    app_data.click_count += 1
-    app_data.last_accessed_at = datetime.now(timezone.utc)
-
-    db.commit()
-    db.refresh(app_data)
-
     log_event(logging.INFO, "Stats Generated", status_code=status.HTTP_200_OK)
     return statsSchema(
         original_url=app_data.original_url,
@@ -74,3 +68,4 @@ async def get_stats(db: DbDependency, alias: str, cred: credentials):
         expires_at=app_data.expires_at,
         last_accessed_at=app_data.last_accessed_at,
     )
+
