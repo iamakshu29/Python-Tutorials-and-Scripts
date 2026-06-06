@@ -3,7 +3,7 @@
 ## Still Pending from Previous Projects
 
 - [ ] Complete Google OAuth in `02_Job_Application_Tracker`
-- [ ] Add rate limiter and pagination to `03_URL_Shortner`
+- [x] Add rate limiter and pagination to `03_URL_Shortner`
 - [ ] Webhook learning project (`Learning Webhooks/`)
 
 ---
