@@ -1,5 +1,5 @@
 from typing import Annotated
-from fastapi import APIRouter, Depends, HTTPException, Path
+from fastapi import APIRouter, Depends, HTTPException, Path, Request
 from schemas.url_create import URLCreate
 from starlette import status
 from models.URL import Url
@@ -36,7 +36,7 @@ def get_response(db: DbDependency, alias):
 # Create Short_url
 @router.post("/", status_code=status.HTTP_201_CREATED)
 @limiter.limit("20/hour")
-def shorten_url(payload: URLCreate, db: DbDependency, cred: credentials):
+def shorten_url(request: Request, payload: URLCreate, db: DbDependency, cred: credentials):
     try:
         user = authenticate_user(cred.username, cred.password, db)
         get_user_data = db.query(User).filter(User.username == cred.username).first()
@@ -110,7 +110,7 @@ def shorten_url(payload: URLCreate, db: DbDependency, cred: credentials):
             status_code=status.HTTP_409_CONFLICT,
         )
         raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT, detail="Unable to add URl"
+            status_code=status.HTTP_409_CONFLICT, detail="Unable to add URL"
         )
 
     except SQLAlchemyError as e:
