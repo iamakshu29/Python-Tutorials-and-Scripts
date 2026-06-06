@@ -29,7 +29,7 @@ def create_job_app(
     if not user:
         log_event(
             logging.ERROR,
-            "Authentication Failed",
+            "Could not Validate User",
             status_code=status.HTTP_401_UNAUTHORIZED,
         )
         raise HTTPException(status_code=401, detail="Authentication Failed")
