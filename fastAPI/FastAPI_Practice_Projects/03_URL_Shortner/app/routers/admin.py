@@ -10,6 +10,8 @@ from schemas.url_response import BulkURLResponse
 from models.User import User
 from models.URL import Url
 from starlette import status
+from utils.logger import log_event
+import logging
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 
@@ -25,6 +27,11 @@ def get_all_user_details(db: DbDependency, cred: credentials):
         user = authenticate_user(cred.username, cred.password, db)
 
         if not user:
+            log_event(
+                logging.ERROR,
+                "Could not Validate User",
+                status_code=status.HTTP_401_UNAUTHORIZED,
+            )
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Could not Validate User",
@@ -34,12 +41,22 @@ def get_all_user_details(db: DbDependency, cred: credentials):
         data = db.query(User).filter(User.username == cred.username).first()
 
         if data.role != "Admin":
+            log_event(
+                logging.ERROR,
+                "Only Admins can view User Details",
+                status_code=status.HTTP_401_UNAUTHORIZED,
+            )
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Could not Validate User",
             )
 
     except SQLAlchemyError as e:
+        log_event(
+            logging.ERROR,
+            "DB Error",
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"DB Error {e}"
         )
@@ -53,6 +70,11 @@ def get_all_urls_by(db: DbDependency, cred: credentials):
     user = authenticate_user(cred.username, cred.password, db)
 
     if not user:
+        log_event(
+            logging.ERROR,
+            "Could not Validate User",
+            status_code=status.HTTP_401_UNAUTHORIZED,
+        )
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Could not Validate User",
@@ -61,6 +83,11 @@ def get_all_urls_by(db: DbDependency, cred: credentials):
     data = db.query(User).filter(User.username == cred.username).first()
 
     if data.role != "Admin":
+        log_event(
+            logging.ERROR,
+            "Only Admins can view all URL Details",
+            status_code=status.HTTP_401_UNAUTHORIZED,
+        )
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Could not Validate User",
@@ -80,6 +107,11 @@ def delete_url(
         user = authenticate_user(cred.username, cred.password, db)
 
         if not user:
+            log_event(
+                logging.ERROR,
+                "Could not Validate User",
+                status_code=status.HTTP_401_UNAUTHORIZED,
+            )
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Could not Validate User",
@@ -89,14 +121,24 @@ def delete_url(
         data = db.query(User).filter(User.username == cred.username).first()
 
         if data.role != "Admin":
+            log_event(
+                logging.ERROR,
+                "Only Admins can delete Urls",
+                status_code=status.HTTP_401_UNAUTHORIZED,
+            )
             raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Could not Validate User",
-        )
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Could not Validate User",
+            )
 
         get_alias = db.query(Url).filter(Url.urlCode == alias).delete()
 
         if get_alias == 0:
+            log_event(
+                logging.ERROR,
+                "Alias not FOund",
+                status_code=status.HTTP_404_NOT_FOUND,
+            )
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND, detail="Item not Found"
             )
@@ -105,6 +147,11 @@ def delete_url(
 
     except SQLAlchemyError as e:
         db.rollback()
+        log_event(
+            logging.ERROR,
+            "DB Error",
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"DB error: {e}"
         )
