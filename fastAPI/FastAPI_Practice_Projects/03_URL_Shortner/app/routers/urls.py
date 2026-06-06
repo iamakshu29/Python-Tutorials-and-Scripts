@@ -128,15 +128,11 @@ def get_url(
     data = db.query(Url).filter(Url.user_id == get_id.id, Url.urlCode == alias).first()
     if data is None:
         raise HTTPException(
-        status_code=status.HTTP_404_NOT_FOUND,
-        detail="No Alias Present"
-    )
-
-    if data.expires_at < datetime.now(timezone.utc):
-        raise HTTPException(
-            status_code=status.HTTP_410_GONE,
-            detail="URL Expired"
+            status_code=status.HTTP_404_NOT_FOUND, detail="No Alias Present"
         )
+    data.expires_at = data.expires_at.replace(tzinfo=timezone.utc)
+    if data.expires_at < datetime.now(timezone.utc):
+        raise HTTPException(status_code=status.HTTP_410_GONE, detail="URL Expired")
 
     return data
 
@@ -162,7 +158,7 @@ def upgrade_expiry_for_url(
     if not get_id.subscription_type == "Premium":
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Basic User can't upgrade the URL",
+            detail="Basic User can't upgrade the URL, Upgrade Membership to Update Expiry_date and Alias",
         )
 
     if not data:
@@ -172,17 +168,8 @@ def upgrade_expiry_for_url(
 
     current_date = datetime.now(timezone.utc)
 
+    data.expires_at = data.expires_at.replace(tzinfo=timezone.utc)
     if current_date > data.expires_at:
-        if get_id.subscription_type == "Basic":
-            data.expired = True
-
-            db.commit()
-            db.refresh(data)
-
-            return {
-                "status": "URL is Expired and cannot be used, Upgrade Membership to Update Expiry_date and Alias"
-            }
-
         data.expires_at = current_date + timedelta(minutes=50)
         data.urlCode = generate_short_code()
 

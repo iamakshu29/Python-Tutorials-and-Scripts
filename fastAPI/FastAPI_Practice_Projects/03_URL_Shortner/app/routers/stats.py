@@ -18,7 +18,7 @@ credentials = Annotated[HTTPBasicCredentials, Depends(security)]
 
 
 # Get URL Stats by Alias
-@router.get("/{alias}", response_model=statsSchema)
+@router.get("/{alias}",status_code=status.HTTP_200_OK, response_model=statsSchema)
 async def get_stats(db: DbDependency, alias: str, cred: credentials):
 
     user = authenticate_user(cred.username, cred.password, db)
@@ -30,28 +30,29 @@ async def get_stats(db: DbDependency, alias: str, cred: credentials):
             headers={"WWW-Authenticate": "Basic"},
         )
 
-    get_data = db.query(Url).filter(Url.urlCode == alias).first()
+    app_data = db.query(Url).filter(Url.urlCode == alias).first()
     user_data = db.query(User).filter(User.username == cred.username).first()
 
-    if not get_data or user_data.id != get_data.user_id:
+    if not app_data or user_data.id != app_data.user_id:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Alias not found"
         )
 
-    if get_data.expires_at < datetime.now(timezone.utc):
+    app_data.expires_at = app_data.expires_at.replace(tzinfo=timezone.utc)
+    if app_data.expires_at < datetime.now(timezone.utc):
         raise HTTPException(status_code=status.HTTP_410_GONE, detail="URL expired")
 
-    get_data.click_count += 1
-    get_data.last_accessed_at = datetime.now(timezone.utc)
+    app_data.click_count += 1
+    app_data.last_accessed_at = datetime.now(timezone.utc)
 
     db.commit()
-    db.refresh(get_data)
+    db.refresh(app_data)
 
     return statsSchema(
-        original_url=get_data.original_url,
-        short_code=get_data.urlCode,
-        click_count=get_data.click_count,
-        created_at=get_data.created_at,
-        expires_at=get_data.expires_at,
-        last_accessed_at=get_data.last_accessed_at,
+        original_url=app_data.original_url,
+        short_code=app_data.urlCode,
+        click_count=app_data.click_count,
+        created_at=app_data.created_at,
+        expires_at=app_data.expires_at,
+        last_accessed_at=app_data.last_accessed_at,
     )
