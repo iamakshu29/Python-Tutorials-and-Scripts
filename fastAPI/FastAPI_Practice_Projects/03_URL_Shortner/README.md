@@ -207,6 +207,7 @@ This project was intentionally built to get hands-on with specific backend engin
 - **Environment config management** — 12-factor app config via `.env` and Pydantic Settings
 - **Containerization** — multi-service Docker Compose setup with health checks
 - **Error handling** — FastAPI `HTTPException` with descriptive error responses
+- **Logging** - JSON Based Logging
 
 ---
 

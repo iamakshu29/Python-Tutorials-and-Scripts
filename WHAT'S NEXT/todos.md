@@ -16,3 +16,12 @@
 - [ ] `httpx` async client (replacing `requests` for async contexts)
 - [ ] Concurrency patterns — running multiple tasks simultaneously
 - [ ] WebSockets (optional, future)
+
+
+## Check with Copilot
+
+- 03_url_shortener -> TESTS -> Failed when run tests for file at once...woerk when run tests for each file
+- env variables
+- need to create QR code 
+- Advanced Analytics dashboard (click trends, referrers)
+- redirection logic
