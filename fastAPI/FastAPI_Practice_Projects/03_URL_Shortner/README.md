@@ -20,17 +20,17 @@ A RESTful URL shortening service built with Python and FastAPI. Converts long UR
 
 ## Tech Stack
 
-| Layer | Technology |
-|---|---|
-| Language | Python 3.11+ |
-| Framework | FastAPI |
-| Database | PostgreSQL (via SQLAlchemy ORM) |
-| Migrations | Alembic |
-| Validation | Pydantic v2 |
-| Security | passlib (bcrypt), HTTP Basic Auth |
-| Server | Uvicorn |
-| Containerization | Docker + Docker Compose |
-| Testing | Pytest |
+| Layer            | Technology                        |
+| ------------------| -----------------------------------|
+| Language         | Python 3.11+                      |
+| Framework        | FastAPI                           |
+| Database         | PostgreSQL (via SQLAlchemy ORM)   |
+| Migrations       | Alembic                           |
+| Validation       | Pydantic v2                       |
+| Security         | passlib (bcrypt), HTTP Basic Auth |
+| Server           | Uvicorn                           |
+| Containerization | Docker + Docker Compose           |
+| Testing          | Pytest                            |
 
 ---
 
@@ -101,16 +101,16 @@ url-shortener/
 
 ### User
 
-| Column | Type | Notes |
-|---|---|---|
-| id | UUID | Primary key, auto-generated |
-| email | String | Unique, indexed |
-| username | String | Unique, indexed |
-| hashed_password | String | bcrypt hashed |
-| role | Enum | `Admin` or `User` |
-| subscription_type | Enum | `Basic` or `Premium` |
-| is_active | Boolean | Default `True` |
-| created_at | DateTime | Auto set on insert |
+| Column            | Type     | Notes                       |
+| -------------------| ----------| -----------------------------|
+| id                | UUID     | Primary key, auto-generated |
+| email             | String   | Unique, indexed             |
+| username          | String   | Unique, indexed             |
+| hashed_password   | String   | bcrypt hashed               |
+| role              | Enum     | `Admin` or `User`           |
+| subscription_type | Enum     | `Basic` or `Premium`        |
+| is_active         | Boolean  | Default `True`              |
+| created_at        | DateTime | Auto set on insert          |
 
 ### URL
 
