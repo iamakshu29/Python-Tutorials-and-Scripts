@@ -3,11 +3,19 @@ from datetime import datetime, timedelta, timezone
 from models.User import User
 from models.URL import Url
 from routers.user import bcrypt_context
-from .utils import TestingSessionLocal
+from .utils import TestingSessionLocal, engine
+from database import Base
 from uuid import uuid4
 
 TEST_USER_UUID = uuid4()
 
+
+@pytest.fixture(autouse=True)
+def reset_db():
+    """Drop and recreate all tables before every test for a clean state."""
+    Base.metadata.drop_all(bind=engine)
+    Base.metadata.create_all(bind=engine)
+    yield
 
 @pytest.fixture
 def db():
@@ -32,9 +40,8 @@ def create_user(db):
     )
     db.add(user)
     db.commit()
+    db.refresh(user)
     yield user
-    db.delete(user)
-    db.commit()
 
 
 @pytest.fixture
@@ -50,6 +57,5 @@ def create_url(db):
     )
     db.add(url)
     db.commit()
+    db.refresh(url)
     yield url
-    db.delete(url)
-    db.commit()

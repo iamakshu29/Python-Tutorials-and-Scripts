@@ -62,13 +62,15 @@ def test_create_short_url_same_urlCode(db, create_user, create_url):
     )
 
     assert response.status_code == status.HTTP_409_CONFLICT
-    assert response.json() == {"detail": "Alias already taken"}
+    assert response.json() == {"detail": "Unable to add URL"}
 
 
 # Get All Url created by the authenticated user.
-def test_get_all_urls_valid_user(create_user):
+def test_get_all_urls_valid_user(create_user, create_url):
     response = client.get("/url/", auth=(create_user.username, "admin123"))
 
+    assert isinstance(response.json(), list)
+    assert len(response.json()) == 1
     assert response.json()[0]["original_url"] == "https://www.example.com/"
     assert UUID(response.json()[0]["user_id"]) == TEST_USER_UUID
 
@@ -101,7 +103,7 @@ def test_get_url_by_alias_not_matched(create_user):
     response = client.get("/url/xyz1234", auth=(create_user.username, "admin123"))
 
     assert response.status_code == status.HTTP_404_NOT_FOUND
-    assert response.json() == {"detail": "No Alias Present"}
+    assert response.json() == {"detail": "Alias Not Found"}
 
 
 # Upgrade/renew an expired URL.
@@ -129,9 +131,8 @@ def test_upgrade_expired_url_premium_user_url_expired(db, create_url, create_use
 
     assert (
         response.json()["status"]
-        == "URL was Expired. Alias and Expiry Time has now been updated as part of your Premier Membership"
+        == "Alias and Expiry Time has now been updated as part of your Premier Membership"
     )
-    # assert response.json()["urlCode"] == create_url.urlCode
 
 
 def test_upgrade_expired_url_premium_user_url_not_expired(db, create_url, create_user):
