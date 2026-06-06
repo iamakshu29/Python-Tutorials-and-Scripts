@@ -5,7 +5,7 @@ from models.Application import Application
 from routers.auth import bcrypt_context, authenticate_user
 from .utils import TestingSessionLocal
 from main import app
-from datetime import datetime, timezone, date
+from datetime import datetime, timezone
 
 TEST_USER_UUID = uuid4()
 
