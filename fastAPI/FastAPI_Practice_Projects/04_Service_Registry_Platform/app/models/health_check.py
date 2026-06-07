@@ -17,8 +17,8 @@ class StatusSchema(Enum):
     UNHEALTHY = "unhealthy"
 
 
-class Service(Base):
-    __tablename__ = "services"
+class HealthCheck(Base):
+    __tablename__ = "health_check"
 
     id: Mapped[UUID] = mapped_column(
         Uuid, primary_key=True, index=True, nullable=False, default=uuid4
