@@ -2,13 +2,13 @@ from fastapi import APIRouter, status, Depends, HTTPException, Path
 from typing import Annotated
 from schemas.user import User as UserResponse
 from models.user import User as userModel
-from models.service import User as serviceModel
-from schema.service import ServiceResponse
+from models.service import Service as serviceModel
+from schemas.service import ServiceResponse
 from utils.auth import authenticate_user
 from sqlalchemy.orm import Session
 from dependencies import get_db
 import logging
-from uuid import Uuid
+from uuid import UUID
 from utils.logger import log_event
 
 router = APIRouter(prefix="/admin", tags=["admin"])
@@ -29,13 +29,13 @@ def verify_admin_user(valid_user: is_valid_user, db: DbDependency):
             detail="User Not Found", status_code=status.HTTP_404_NOT_FOUND
         )
 
-    if user.role != "admin":  # Cleaned up 'not user.role == "admin"' to '!= "admin"'
+    if user.role != "admin":
         log_event(
             logging.ERROR,
             "User does not have Admin privileges",
             status_code=status.HTTP_403_FORBIDDEN,
         )
-        raise HTTPException(detail="User Not Found", status_code=status.HTTP_403)
+        raise HTTPException(detail="User does not have Admin privileges", status_code=status.HTTP_403_FORBIDDEN)
 
     return user
 
@@ -59,11 +59,11 @@ def get_all_registered_users(db: DbDependency, current_user: is_admin):
 def force_deactivate_a_service_by_id(
     db: DbDependency,
     current_user: is_admin,
-    id: Uuid = Path(default=Uuid),
+    id: UUID = Path(),
 ):
     service = db.query(serviceModel).filter(serviceModel.id == id).first()
     service.is_active = False
-
+    db.commit()
     db.refresh(service)
 
     return f"{service.name} Service Deactivated"

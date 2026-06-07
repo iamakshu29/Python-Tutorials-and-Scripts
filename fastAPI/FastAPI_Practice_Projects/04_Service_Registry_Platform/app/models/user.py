@@ -6,13 +6,13 @@ from enum import Enum
 from database import Base
 
 
-class UserRoleSchema(Enum):
+class UserRoleSchema(str, Enum):
     ADMIN = "admin"
     USER = "user"
 
 
 class User(Base):
-    __tablename__ = "services"
+    __tablename__ = "users"
 
     id: Mapped[UUID] = mapped_column(
         Uuid, primary_key=True, index=True, nullable=False, default=uuid4
