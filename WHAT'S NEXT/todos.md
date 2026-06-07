@@ -15,8 +15,3 @@
 - [ ] `httpx` async client (replacing `requests` for async contexts)
 - [ ] Concurrency patterns — running multiple tasks simultaneously
 - [ ] WebSockets (optional, future)
-
-
-## Check with Copilot
-
-- need to create QR code  - this is for me to practice 

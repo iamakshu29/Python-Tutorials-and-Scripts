@@ -166,6 +166,7 @@ History of every poll result.
 │   │   └── health_service.py  # Core polling logic, webhook firing
 │   └── utils/
 │       ├── auth.py          # JWT create/decode, bcrypt helpers
+|       ├── logger.py        # For JSON Structured Log Configuration
 │       ├── poller.py        # Background polling loop (asyncio)
 │       ├── webhook.py       # Send POST to webhook URLs (httpx)
 │       └── redis_client.py  # Redis connection + get/set helpers
