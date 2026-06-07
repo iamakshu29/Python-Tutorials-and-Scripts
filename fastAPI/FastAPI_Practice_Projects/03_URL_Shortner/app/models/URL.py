@@ -2,7 +2,6 @@ from sqlalchemy import ForeignKey, func, DateTime
 from uuid import UUID
 from datetime import datetime, timezone
 from sqlalchemy.orm import mapped_column, Mapped
-
 from database import Base
 
 

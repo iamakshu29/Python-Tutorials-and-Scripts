@@ -1,7 +1,6 @@
-from sqlalchemy import func, Uuid
+from sqlalchemy import func, Uuid, Enum as SQLEnum
 from sqlalchemy.orm import mapped_column, Mapped
 from datetime import datetime
-from sqlalchemy import Enum as SQLEnum
 from enum import Enum
 from uuid import UUID, uuid4
 

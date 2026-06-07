@@ -1,10 +1,8 @@
 from fastapi import HTTPException
-from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
 from database import SessionLocal
 from utils.logger import log_event
 import logging
-from starlette import status
 
 # DB lifecycle and DB Session Depends on it
 def get_db():

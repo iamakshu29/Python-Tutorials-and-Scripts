@@ -49,9 +49,9 @@ def create_jwt(id: UUID, db: DbDependency) -> str | None:
     if get_details:
         payload = {
             "sub": get_details.email,
-            "id": str(id),
+            "id": str(id),  # UUID is not JSON Serializable.
             "role": get_details.role,
-        }  # UUID is not JSON Serializable.
+        }
 
         # add 20 minutes token expiration time
         minutes = 20
