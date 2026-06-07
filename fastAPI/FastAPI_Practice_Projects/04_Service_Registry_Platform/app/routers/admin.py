@@ -47,14 +47,12 @@ is_admin = Annotated[userModel, Depends(verify_admin_user)]
     "/services", response_model=list[ServiceResponse], status_code=status.HTTP_200_OK
 )
 def get_all_services(db: DbDependency, current_user: is_admin):
-    if current_user:
-        return db.query(serviceModel).all()
+    return db.query(serviceModel).all()
 
 
 @router.get("/users", response_model=list[UserResponse], status_code=status.HTTP_200_OK)
 def get_all_registered_users(db: DbDependency, current_user: is_admin):
-    if current_user:
-        return db.query(userModel).all()
+    return db.query(userModel).all()
 
 
 @router.patch("/services/{id}/deactivate")
@@ -63,11 +61,9 @@ def force_deactivate_a_service_by_id(
     current_user: is_admin,
     id: Uuid = Path(default=Uuid),
 ):
-    if current_user:
-        service = db.query(serviceModel).filter(serviceModel.id == id).first()
-        service.is_active = False
+    service = db.query(serviceModel).filter(serviceModel.id == id).first()
+    service.is_active = False
 
-        db.refresh(service)
+    db.refresh(service)
 
-
-        return f"{service.name} Service Deactivated"
+    return f"{service.name} Service Deactivated"
