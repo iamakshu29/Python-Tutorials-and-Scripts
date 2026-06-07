@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 from utils.logger import log_event
 from dependencies import get_db
 from typing import Annotated
-from uuid import Uuid
+from uuid import UUID
 import logging
 
 router = APIRouter(prefix="/services", tags=["services"])
@@ -30,7 +30,7 @@ def register_new_service(
         raise HTTPException(
             detail="User Not Found", status_code=status.HTTP_404_NOT_FOUND
         )
-    service = serviceModel(serviceBody.model_dump())
+    service = serviceModel(**serviceBody.model_dump(), registered_by=user.id)
     db.add(service)
     return "Service Created Successfully"
 
@@ -47,13 +47,13 @@ def list_all_services(db: DbDependency, valid_user: is_valid_user):
         raise HTTPException(
             detail="User Not Found", status_code=status.HTTP_404_NOT_FOUND
         )
-    services = db.query(serviceModel).all()
+    services = db.query(serviceModel).filter(serviceModel.registered_by == user.id).all()
     return services
 
 
 @router.get("/{id}", response_model=ServiceResponse)
 def get_service_details_and_status(
-    db: DbDependency, valid_user: is_valid_user, id: Uuid = Path()
+    db: DbDependency, valid_user: is_valid_user, id: UUID = Path()
 ):
     user = db.query(userModel).filter(userModel.username == valid_user.username).first()
     if not user:
@@ -71,7 +71,7 @@ def get_service_details_and_status(
 
 @router.patch("/{id}", response_model=ServiceResponse)
 def update_service_config(
-    db: DbDependency, service_update: ServiceUpdate, valid_user: is_valid_user
+    db: DbDependency, service_update: ServiceUpdate, valid_user: is_valid_user, id: UUID = Path()
 ):
     user = db.query(userModel).filter(userModel.username == valid_user.username).first()
     if not user:
@@ -108,6 +108,7 @@ def deregister_a_service(db: DbDependency, valid_user: is_valid_user):
         )
     service = db.query(serviceModel).filter(serviceModel.id == id).first()
     service.is_active = False
+    db.commit()
     db.refresh(service)
     return f"{service.name} Service from environment: {service.env} deregistered by team: {service.team}"
 

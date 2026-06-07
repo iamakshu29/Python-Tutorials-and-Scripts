@@ -1,4 +1,4 @@
-from sqlalchemy import func, Uuid, Enum as SQLEnum
+from sqlalchemy import func, Uuid, Enum as SQLEnum, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column
 from datetime import datetime
 from uuid import UUID, uuid4
@@ -6,13 +6,13 @@ from enum import Enum
 from database import Base
 
 
-class EnvironmentSchema(Enum):
+class EnvironmentSchema(str, Enum):
     DEV = "dev"
     PROD = "prod"
     STAGING = "staging"
 
 
-class CurrentStatusSchema(Enum):
+class CurrentStatusSchema(str, Enum):
     HEALTHY = "healthy"
     UNHEALTHY = "unhealthy"
     UNKNOWN = "unknown"
@@ -35,7 +35,7 @@ class Service(Base):
         nullable=False,
     )
     health_url: Mapped[str] = mapped_column(nullable=False)
-    webhook_url: Mapped[str] = mapped_column(nullable=True)
+    webhook_url: Mapped[str | None] = mapped_column(nullable=True)
     current_status: Mapped[Enum] = mapped_column(
         SQLEnum(
             CurrentStatusSchema,
@@ -43,10 +43,11 @@ class Service(Base):
             values_callable=lambda x: [e.value for e in x],
         ),
         nullable=False,
+        default=CurrentStatusSchema.UNKNOWN,
     )
-    is_active: Mapped[bool] = mapped_column(nullable=False)
-    registered_by: Mapped[UUID] = mapped_column(Uuid, foreign_key="users.id")
+    is_active: Mapped[bool] = mapped_column(nullable=False, default=True)
+    registered_by: Mapped[UUID] = mapped_column(Uuid, ForeignKey("users.id"), nullable=False)
     created_at: Mapped[datetime] = mapped_column(
         server_default=func.now(), nullable=False
     )
-    last_checked_at: Mapped[datetime] = mapped_column(nullable=False)
+    last_checked_at: Mapped[datetime | None] = mapped_column(nullable=True)

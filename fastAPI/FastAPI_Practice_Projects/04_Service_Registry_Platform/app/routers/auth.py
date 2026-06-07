@@ -38,7 +38,7 @@ def register_new_user(db: DbDependency, user_request: userSchema):
         status_code=status.HTTP_201_CREATED,
     )
 
-    return "User Registered Successfully..."
+    return user_data
 
 
 @router.post("/login", status_code=status.HTTP_200_OK)
@@ -69,7 +69,7 @@ def login_user(db: DbDependency, userLogin: login_details):
             status_code=status.HTTP_404_NOT_FOUND,
         )
 
-    jwt_token = create_jwt(user.usename, user.id, user.role)
+    jwt_token = create_jwt(user.username, user.id, user.role)
 
     log_event(logging.INFO, "Token Retrieved", status_code=status.HTTP_201_CREATED)
     return {"access_token": jwt_token, "token_type": "bearer"}

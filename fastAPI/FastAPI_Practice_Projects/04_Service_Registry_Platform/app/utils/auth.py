@@ -7,11 +7,12 @@ from sqlalchemy.orm import Session
 from dependencies import get_db
 from jose import jwt, JWTError
 from typing import Annotated
-from logger import log_event
+from utils.logger import log_event
 import logging
 
 bcrypt_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-SECRET_KEY = "be59b0a178a9b3130d32a09adf33bf668d7042715f490e46886b37182ed80851"
+import os
+SECRET_KEY = os.getenv("SECRET_KEY", "changeme-set-this-in-env")
 ALGORITHM = "HS256"
 oauth2_bearer = OAuth2PasswordBearer(tokenUrl="/auth/login")
 get_token = Annotated[str, Depends(oauth2_bearer)]
@@ -56,8 +57,8 @@ def decode_jwt(jwt_token) -> dict:
     return payload
 
 
-def authenticate_user(db: DbDependency) -> bool:
-    payload = decode_jwt(get_token)
+def authenticate_user(token: get_token,db: DbDependency) -> bool:
+    payload = decode_jwt(token)
 
     payload_username: str = payload.get("sub")
     payload_id: str = payload.get("id")
@@ -75,7 +76,7 @@ def authenticate_user(db: DbDependency) -> bool:
 
     user = db.query(userModel).filter(userModel.username == payload_username).first()
 
-    if not user == payload_username:
+    if not user or user.username != payload_username:
         log_event(
             logging.ERROR, "User not found", status_code=status.HTTP_401_UNAUTHORIZED
         )

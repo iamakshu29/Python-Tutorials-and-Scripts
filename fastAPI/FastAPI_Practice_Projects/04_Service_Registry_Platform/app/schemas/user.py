@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, EmailStr, Field, ConfigDict
 from models.user import UserRoleSchema
 from datetime import datetime
 from uuid import UUID
@@ -10,8 +10,10 @@ class User(BaseModel):
     role: UserRoleSchema
 
 class UserResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     id: UUID
     email: EmailStr
     username: str
     role: UserRoleSchema
-    create_at: datetime
+    created_at: datetime
