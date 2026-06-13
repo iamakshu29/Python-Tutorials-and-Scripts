@@ -214,9 +214,7 @@ This project was intentionally built to get hands-on with specific backend engin
 ## Potential Improvements (Not Yet Implemented)
 
 - Real URL Redirection (Currently handled as a data response instead of `302 Found`)
-- Redis caching for high-frequency redirects
 - Advanced Analytics dashboard (click trends, referrers)
-- QR code generation per short URL
 
 ---
 
