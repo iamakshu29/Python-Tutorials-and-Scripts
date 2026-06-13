@@ -24,7 +24,7 @@
   1. asyncio.Task — deeper understanding
        - create_task() schedules a coroutine; it runs concurrently with you
        - task.cancel() — how to cancel a running task
-       - task.done(), task.result(), task.exception()
+       - task.cancelled(), task.done(), task.result(), task.exception()
        - CancelledError — what it is and how to handle it in the cancelled task
        - Understand: cancelling a task doesn't kill it instantly — it injects CancelledError at the next await
 
@@ -36,12 +36,13 @@
 
   3. asyncio.wait_for()
        - Run a coroutine with a timeout
+       - It returns a coroutine
        - Raises asyncio.TimeoutError if it takes too long
        - Understand: the coroutine is cancelled when the timeout hits
        - Practice: simulate a slow API call, wrap it in wait_for with 2s timeout
 
   4. asyncio.shield()
-       - Protect a coroutine from being cancelled
+       - Protect a child coroutine from being cancelled
        - Use case: you're cancelling a task but you want the cleanup coroutine inside to finish
        - Understand when shield is NOT enough (it doesn't prevent all cancellations)
 
