@@ -78,7 +78,7 @@
 
   Think of the event loop as a to-do list manager.
   Every time a coroutine hits await, it says "I'm waiting, do something else".
-  The event loop picks the next ready coroutine and runs it until IT hits an await.
+  The event loop picks the next ready coroutine and runs it until it hits an await.
   No two coroutines run at the EXACT same instant — they take turns.
   This is why asyncio is great for I/O (waiting for network, disk) but NOT for CPU work.
 
@@ -112,6 +112,7 @@
       → figure out how to structure that with gather and await
     - One job should "fail" — handle the error without stopping all other jobs
     - Add a job that updates a shared counter (and notice if there are race conditions)
+    Define - A race condition is when two or more concurrent operations read and modify the same value, and the final result depends on who runs in what order — giving you a wrong answer.
 
   File to create: 01_asyncio_core/async_task_runner.py
 
