@@ -66,16 +66,19 @@
        - This is your primary tool for rate limiting — you'll use it constantly
 
   8. asyncio.Event
+      The event is specifically for "don't proceed until something else signals you're ready".
        - A flag that coroutines can wait for
-       - event.set() → signals all waiters
+       - event.set() → signals the event — wakes all waiters
        - event.wait() → pauses until the event is set
+       - event.clear() → resets the event back to unset
+       - event.is_set() → returns True/False
        - Use case: "don't start processing until the database is ready"
 
 ---
 
 ## Things to experiment with (break stuff on purpose)
 
-  - Cancel a task that's sleeping — does it print its "done" message?
+  - Cancel a task that's sleeping — does it print its "done/last" message?
   - Put more items than consumers can handle in a Queue — what happens?
   - Use a Lock incorrectly (acquire without release) — your code deadlocks. See it happen.
   - Use Semaphore(1) — is it the same as a Lock? When would you prefer one over the other?
@@ -122,7 +125,7 @@
     - Print which worker processed which job — you should see the distribution
 
   Stretch goals:
-    - One job type ("email") takes longer — workers should not block each other
+    - One job type ("message") takes longer — workers should not block each other
     - If a job fails (random chance), put it back in the queue for retry (max 2 retries)
     - Add an asyncio.Event that workers wait on before starting
       (simulate a "system ready" signal before processing begins)

@@ -74,3 +74,7 @@ finally:
 
 with lock:
     counter += 1
+
+# ---------------------------------------------------
+random.randint(1, 3)   # only whole numbers → 1, 2, or 3
+random.uniform(1, 3)   # any float → 1.0, 1.23, 2.77, 3.0

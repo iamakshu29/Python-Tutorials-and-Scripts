@@ -211,15 +211,27 @@ async def main():
 
 
 ## asyncio.Queue
+# left - put_nowait(), get_nowait(),
+
+### Important Explaination
+# queue.put()     → counter +1  (item added) -> adding a ticket
+# queue.get()     → nothing changes (item taken but not processed yet) -> picking up the ticket
+# task_done()     → counter -1  (item fully processed) -> stamping the ticket as "done"
+# queue.join()    → waits here until counter == 0 -> waiting until all tickets are stamped
+
+# task_done() — decrements the internal counter (doesn't check anything, just signals "one more item finished")
+# queue.join() — blocks until the counter reaches 0 (it's a waiter, not a checker)
 
 
-async def producer(queue):
+async def producer(queue, num_consumers):
     for i in range(5):
         print(f"Producing {i}")
         await queue.put(i)
         # queue.put_nowait(i)
         await asyncio.sleep(1)
-    await queue.put(None)
+    # Send one None sentinel per consumer so each consumer can exit
+    for _ in range(num_consumers):
+        await queue.put(None)
 
 
 import random
@@ -232,26 +244,135 @@ async def consumer(name, queue):
         await asyncio.sleep(random.uniform(0.5, 2))
 
         if item is None:
-            queue.task_done()
-            break
+            queue.task_done() # None was put() so counter went up → must bring it down before break
+            break # task_done() must be BEFORE break, after break = unreachable
 
         print(f"{name} Consumed {item}")
-        queue.task_done()
+        queue.task_done() # every get() needs a matching task_done() → decrements counter
 
 
 async def main():
     queue = asyncio.Queue()
+    num_consumers = 3
 
-    producer_task = asyncio.create_task(producer(queue))
-    consumer_task_1 = asyncio.create_task(consumer("1", queue))
-    consumer_task_2 = asyncio.create_task(consumer("2", queue))
-    consumer_task_3 = asyncio.create_task(consumer("3", queue))
+    producer_task = asyncio.create_task(producer(queue, num_consumers))
+    consumer_tasks = []
+    for i in range(num_consumers):
+        consumer_tasks.append(asyncio.create_task(consumer(str(i), queue)))
 
     await producer_task
+
     await queue.join()
-    await consumer_task_1
-    await consumer_task_2
-    await consumer_task_3
+
+    for task in consumer_tasks:
+        await task
 
 
 asyncio.run(main())
+
+
+## asyncio.Lock
+# Only one coroutine can hold the lock at a time
+# Use: async with lock:
+# count is an int (immutable) so we use a dict as shared mutable state
+
+
+async def task_1(shared, lock):
+    print("task_1: wants to update count")
+    async with lock:
+        current = shared["count"]
+        await asyncio.sleep(random.uniform(0.5, 1))  # simulate work while holding lock
+        shared["count"] = current + 1
+        print(f"task_1: count updated to {shared['count']}")
+
+
+async def task_2(shared, lock):
+    print("task_2: wants to update count")
+    async with lock:
+        current = shared["count"]
+        await asyncio.sleep(random.uniform(0.5, 1))  # simulate work while holding lock
+        shared["count"] = current + 1
+        print(f"task_2: count updated to {shared['count']}")
+
+
+async def main():
+    lock = asyncio.Lock()
+    shared = {"count": 0}
+
+    await asyncio.gather(task_1(shared, lock), task_2(shared, lock))
+
+    print("Final count:", shared["count"])  # always 2, never a race condition
+
+
+# asyncio.run(main())
+
+#### FLOW 
+# main starts gather(task_1, task_2)
+
+# → task_1 starts:
+#     print("task_1: wants to update count")
+#     async with lock:           ← lock is free, task_1 acquires it
+#         current = shared["count"]   # reads 0
+#         await asyncio.sleep()  ← yields control to event loop
+
+# → task_2 starts:
+#     print("task_2: wants to update count")
+#     async with lock:           ← lock is TAKEN → task_2 suspends here, waiting
+
+# → event loop has nothing else runnable, waits for task_1's sleep to finish
+
+# → task_1 resumes:
+#         shared["count"] = 0 + 1    # writes 1
+#         print("task_1: count updated to 1")
+#     ← lock released (exits async with)
+
+# → task_2 wakes up, acquires lock:
+#         current = shared["count"]   # reads 1
+#         await asyncio.sleep()  ← yields control
+#         shared["count"] = 1 + 1    # writes 2
+#         print("task_2: count updated to 2")
+#     ← lock released
+
+# → gather finishes, back to main:
+#     print("Final count: 2")
+
+
+## asyncio.Semaphore -> act as rate limiter
+
+async def fetch(url, sem):
+    print("Trying to fetch url")
+    async with sem:   # each coroutine tries to acquire — first 3 get in, rest wait
+        print("Fetching URL", url)
+        await asyncio.sleep(random.uniform(1,3))
+
+
+async def main():
+    sem = asyncio.Semaphore(3)  # ← just the number, no mention of specific tasks
+    urls = ["abc.com","def.com","ghi.com","jkl.com","mno.com","pqr.com","stu.com"]
+    # create 10 tasks — semaphore automatically limits to 3 running at once
+    tasks = [asyncio.create_task(fetch(url,sem)) for url in urls]
+    await asyncio.gather(*tasks)
+    print("All url fetched \n")
+
+# asyncio.run(main())
+
+
+## asyncio.Event
+async def get_db(event):
+    print("Connecting to DB")
+    await asyncio.sleep(2)      # async sleep — doesn't block event loop
+    event.set()
+    print("DB connected")
+
+async def fetch_data(event):
+    print("User Hitting URL")
+    await event.wait()          # suspends until get_db calls event.set()
+    print("DB is ready, fetching data now")
+
+
+async def main():
+    event = asyncio.Event()
+    await asyncio.gather(get_db(event), fetch_data(event))  # run concurrently
+
+# asyncio.run(main())
+

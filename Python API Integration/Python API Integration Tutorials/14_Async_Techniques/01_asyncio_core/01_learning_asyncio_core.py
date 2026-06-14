@@ -116,7 +116,7 @@ async def main():
     return result
 
 
-# print(asyncio.run(main()))
+print(asyncio.run(main()))
 
 # 7. Timing and understanding the event loop - Used all along
 
