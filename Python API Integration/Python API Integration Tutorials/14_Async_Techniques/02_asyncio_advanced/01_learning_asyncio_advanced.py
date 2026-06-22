@@ -21,10 +21,14 @@ import time
 # task.cancelled() -> To check if the tasks is cancelled or not -> bool => True if task ended due to cancellation
 # task.done() -> In asyncio, a task is considered done if it has reached any terminal state -> i.e. finished properly or cancelled or it can be in final state, without ever executing a single line of the coroutine.
 
-### To inspect the outcome of a completed asyncio.Task
+### To inspect the outcome of a "completed" asyncio.Task
 # task.result() ->
 # Returns the value returned by the coroutine.
 # raises asyncio.CancelledError for a cancelled task
+
+# The key difference between await task and task.result() is:
+# await task waits until the task is finished.
+# task.result() does not wait. It only retrieves the result of a task that has already "completed".
 
 # task.exception() ->
 # If the task raised an exception -> bool
@@ -77,9 +81,8 @@ async def main():
 # if ONE task fails, ALL others are cancelled
 # Means execution after await wont be run
 
-# For gather we dont need to explicit await
-# For task we need an explicit await, to get the return values or anything
-# For TaskGroup also, we donot require an explicit await.
+# For gather and TaskGroup we dont need any explicit await to waits until the task is finished.
+# For create_task() we need an explicit await, to get the return values or anything
 
 
 async def topic_4():
@@ -135,8 +138,7 @@ async def main():
 # It protects against cancellation propagation from the awaiting or child coroutine.
 # If the coroutine doing the await is cancelled, the cancellation stops at the shield boundary. The awaited task keeps running.
 
-# shield() does NOT protect against
-# The cancellation requested directly to the task itself. The task will still receive CancelledError and can end in the cancelled state.
+# IMP -> shield() does NOT protect against the cancellation requested directly to the task itself. The task will still receive CancelledError and can end in the cancelled state.
 
 ## Cancellation of the parent/awaiter
 # Without shield(): cancellation propagates into the awaited task.
@@ -244,11 +246,11 @@ async def consumer(name, queue):
         await asyncio.sleep(random.uniform(0.5, 2))
 
         if item is None:
-            queue.task_done() # None was put() so counter went up → must bring it down before break
-            break # task_done() must be BEFORE break, after break = unreachable
+            queue.task_done()  # None was put() so counter went up → must bring it down before break
+            break  # task_done() must be BEFORE break, after break = unreachable
 
         print(f"{name} Consumed {item}")
-        queue.task_done() # every get() needs a matching task_done() → decrements counter
+        queue.task_done()  # every get() needs a matching task_done() → decrements counter
 
 
 async def main():
@@ -306,7 +308,7 @@ async def main():
 
 # asyncio.run(main())
 
-#### FLOW 
+#### FLOW
 # main starts gather(task_1, task_2)
 
 # → task_1 starts:
@@ -339,20 +341,22 @@ async def main():
 
 ## asyncio.Semaphore -> act as rate limiter
 
+
 async def fetch(url, sem):
     print("Trying to fetch url")
-    async with sem:   # each coroutine tries to acquire — first 3 get in, rest wait
+    async with sem:  # each coroutine tries to acquire — first 3 get in, rest wait
         print("Fetching URL", url)
-        await asyncio.sleep(random.uniform(1,3))
+        await asyncio.sleep(random.uniform(1, 3))
 
 
 async def main():
     sem = asyncio.Semaphore(3)  # ← just the number, no mention of specific tasks
-    urls = ["abc.com","def.com","ghi.com","jkl.com","mno.com","pqr.com","stu.com"]
+    urls = ["abc.com", "def.com", "ghi.com", "jkl.com", "mno.com", "pqr.com", "stu.com"]
     # create 10 tasks — semaphore automatically limits to 3 running at once
-    tasks = [asyncio.create_task(fetch(url,sem)) for url in urls]
+    tasks = [asyncio.create_task(fetch(url, sem)) for url in urls]
     await asyncio.gather(*tasks)
     print("All url fetched \n")
+
 
 # asyncio.run(main())
 
@@ -360,13 +364,14 @@ async def main():
 ## asyncio.Event
 async def get_db(event):
     print("Connecting to DB")
-    await asyncio.sleep(2)      # async sleep — doesn't block event loop
+    await asyncio.sleep(2)  # async sleep — doesn't block event loop
     event.set()
     print("DB connected")
 
+
 async def fetch_data(event):
     print("User Hitting URL")
-    await event.wait()          # suspends until get_db calls event.set()
+    await event.wait()  # suspends until get_db calls event.set()
     print("DB is ready, fetching data now")
 
 
@@ -374,5 +379,5 @@ async def main():
     event = asyncio.Event()
     await asyncio.gather(get_db(event), fetch_data(event))  # run concurrently
 
-# asyncio.run(main())
 
+# asyncio.run(main())
