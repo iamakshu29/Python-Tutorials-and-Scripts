@@ -1,3 +1,11 @@
+# asyncio.run() is not what makes it sequential.
+# To get concurrency, both coroutines must be scheduled before awaiting them: and You schedule a coroutine by turning it into a Task.
+
+# Asynchronous and Concurrency are different thing..It just async function can run concurrently as sync can never be concurrent in a "single thread"
+# synchronous code can achieve concurrency using: Threads (threading) , Processes (multiprocessing)
+
+# An async function is simply a function that can pause (await) and yield control back to the event loop.
+
 import asyncio
 import time
 
@@ -9,7 +17,7 @@ async def func1():
 # 1.
 # func1()  # Getting RuntimeWarning: coroutine 'func1' was never awaited
 
-# 2.
+# 2. asyncio.run() effectively awaits the coroutine for you., no need to add explicit await
 # print(asyncio.run(func1()))
 
 
@@ -28,7 +36,8 @@ async def func2():
 # asyncio.run(func2())
 
 
-# 4. Coroutine chaining OR Sequential Working...though the function as async but they still behaves like sync. Tasks are done one after the other not concurrently
+# 4. Coroutine chaining OR Sequential Working...though the function as async but they still behaves like sync. Tasks are done one after the other not concurrently WHY ?? becuase concurency need to be scheduled those function beforehand
+# which is done by creating task
 async def parse_response():
     print("Parsing Starts")
     await asyncio.sleep(2)
@@ -116,7 +125,7 @@ async def main():
     return result
 
 
-print(asyncio.run(main()))
+# print(asyncio.run(main()))
 
 # 7. Timing and understanding the event loop - Used all along
 
@@ -150,7 +159,7 @@ async def main():
 
 
 # asyncio.run(main())
-# Response - Even Concurrent Function run as Synchronous Function
+# Response - Even Concurrent Function run as Synchronous Function because of time.sleep()
 
 # c. What happens if you raise an exception inside a gather?
 
@@ -190,7 +199,7 @@ async def main():
 # Other Tasks continue running Background until completed or cancelled. (based on timing)
 
 # Use, return_exceptions=True -> return list of coroutine which contains values as the return values
-# If you want all tasks to finish and collect exceptions as results list instead of being raised.
+# make it True, If you want all tasks to finish and collect exceptions as results list instead of being raised.
 
 # d. What is the return value of a coroutine that has no return statement?
 # Response = None

@@ -21,9 +21,11 @@
 
 ---
 
-## Installation
+## Installation and Usage
 
   pip install httpx
+
+  import httpx
 
 ---
 

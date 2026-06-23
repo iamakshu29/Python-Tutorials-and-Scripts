@@ -1,6 +1,5 @@
 # 2_authentication.py — API Authentication Methods (API Key, Bearer Token)
 
-from time import sleep
 import requests
 import json
 import logging
@@ -33,13 +32,10 @@ response = requests.get(url)
 
 # Way 2: Pass params as a dict — requests auto-converts to query string
 # Becomes: ?q=Bangalore&appid=your_api_key
-params = {
-    "q":"Bangalore",
-    "appid": API_KEY
-    }
+params = {"q": "Bangalore", "appid": API_KEY}
 url = "https://api.openweathermap.org/data/2.5/weather"
 
-response = requests.get(url,params=params)
+response = requests.get(url, params=params)
 # print(response.json())
 
 
@@ -50,9 +46,7 @@ response = requests.get(url,params=params)
 # "Authorization: Bearer <token>" is the standard format for OAuth tokens.
 # requests maps each key–value pair in the dict directly into HTTP headers.
 
-headers = {
-    "Authorization": f"Bearer {GITHUB_TOKEN}"
-}
+headers = {"Authorization": f"Bearer {GITHUB_TOKEN}"}
 response = requests.get("https://api.github.com/user", headers=headers)
 # print(response.json())
 
@@ -63,26 +57,25 @@ response = requests.get("https://api.github.com/user", headers=headers)
 # Fetches GitHub user data using Bearer token, saves to JSON, logs errors to file.
 
 url = "https://api.github.com/user"
-headers = {
-    "Authorization": f"Bearer {GITHUB_TOKEN}"
-}
+headers = {"Authorization": f"Bearer {GITHUB_TOKEN}"}
 
 # Configure logging — errors go to app.log with timestamp and level
 logging.basicConfig(
     filename="app.log",
     level=logging.ERROR,
-    format="%(asctime)s - %(levelname)s - %(message)s"
+    format="%(asctime)s - %(levelname)s - %(message)s",
 )
+
 
 def get_info():
     try:
-        res = requests.get(url,headers=headers, timeout=10)
+        res = requests.get(url, headers=headers, timeout=10)
         res.raise_for_status()  # Raises HTTPError for 4xx/5xx
         data = res.json()
 
         # Save response to a JSON file
-        with open("github_data.json","w",newline="") as f:
-            json.dump(data,f,indent=4)
+        with open("github_data.json", "w", newline="") as f:
+            json.dump(data, f, indent=4)
 
         return data
 
@@ -97,7 +90,8 @@ def get_info():
         logging.error(f"General request error: {e}")
     except ValueError:
         logging.error(f"Invalid JSON Response")
-    
+
     return None  # Returns None if any exception occurred
+
 
 # get_info()

@@ -1,5 +1,6 @@
 import asyncio
 import time
+import random
 
 ### Cancel a running task
 # If as task got cancelled, it will not get executed
@@ -134,8 +135,7 @@ async def main():
 
 
 ## asyncio.shield()
-# Shield() protects us against
-# It protects against cancellation propagation from the awaiting or child coroutine.
+# Shield() protects us against cancellation propagation from the awaiting or child coroutine.
 # If the coroutine doing the await is cancelled, the cancellation stops at the shield boundary. The awaited task keeps running.
 
 # IMP -> shield() does NOT protect against the cancellation requested directly to the task itself. The task will still receive CancelledError and can end in the cancelled state.
@@ -234,9 +234,6 @@ async def producer(queue, num_consumers):
     # Send one None sentinel per consumer so each consumer can exit
     for _ in range(num_consumers):
         await queue.put(None)
-
-
-import random
 
 
 async def consumer(name, queue):
