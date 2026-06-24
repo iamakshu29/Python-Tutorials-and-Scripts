@@ -1,6 +1,13 @@
-"""
-Build an async service that checks the health of multiple API endpoints concurrently.
+# 03_project_health_checker.py — Async API Health Checker
 
+# =============================================
+# PROJECT OVERVIEW
+# =============================================
+# Checks the health of multiple API endpoints concurrently.
+# Each check records: url, status_code, response_time_ms, is_healthy.
+# An endpoint is healthy if it responds within 3s with status < 400.
+# Semaphore(5) caps concurrent requests to 5 at a time.
+"""
 Requirements:
   - A list of at least 8 URLs to check (mix of httpbin.org paths, some that will fail) - done
   - Check all endpoints CONCURRENTLY using AsyncClient + gather - done
@@ -58,16 +65,16 @@ async def check_api_health(client, url, response_threshold_ms, timeout, sem):
 
 async def main():
     URLs = [f"https://pokeapi.co/api/v2/evolution-chain/{i}" for i in range(1, 9)]
-    timeout = httpx.Timeout(3.0)
-    response_threshold_ms = 3000
-    sem = asyncio.Semaphore(5)
+    timeout = httpx.Timeout(3.0)           # 3s across all phases
+    response_threshold_ms = 3000           # Healthy if response arrives within this window
+    sem = asyncio.Semaphore(5)             # Max 5 concurrent checks at once
 
     async with httpx.AsyncClient() as client:
         tasks = [
             check_api_health(client, url, response_threshold_ms, timeout, sem)
             for url in URLs
         ]
-        return await asyncio.gather(*tasks)
+        return await asyncio.gather(*tasks)  # All 8 checks fire concurrently, capped at 5
 
 
 data = asyncio.run(main())

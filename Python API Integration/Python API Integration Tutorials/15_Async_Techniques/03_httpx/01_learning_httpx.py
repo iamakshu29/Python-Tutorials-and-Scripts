@@ -1,3 +1,10 @@
+# 01_learning_httpx.py — httpx: Sync and Async HTTP Client
+
+# =============================================
+# SETUP — Imports and Environment
+# =============================================
+# httpx mirrors the requests API but supports async natively.
+# Load API credentials from .env in the same folder as this file.
 import requests
 import httpx
 import asyncio
@@ -16,11 +23,17 @@ GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
 headers = {"Authorization": f"Bearer {GITHUB_TOKEN}"}
 URL = "https://api.github.com/user"
 
-### using requests module just as an example.
+# requests equivalent — shown for comparison only
 # response = requests.get(URL, headers=headers)
 # print(response.json())
 
-## 1. httpx.Client (sync) — the requests replacement
+
+# =============================================
+# 1. httpx.Client (Sync) — The requests Replacement
+# =============================================
+# httpx.Client() is the sync equivalent of requests.Session().
+# Always use it as a context manager — handles connection pooling and cleanup automatically.
+# response.raise_for_status() raises httpx.HTTPStatusError on 4xx/5xx (same as requests).
 # with httpx.Client() as client:
 #     try:
 #         response = client.get(URL, headers=headers)
@@ -37,8 +50,12 @@ URL = "https://api.github.com/user"
 #         print(f"Unexpected error: {e}")
 
 
-# 2. httpx.AsyncClient — the async HTTP client
-# context manager should always be inside an async function
+# =============================================
+# 2. httpx.AsyncClient — The Async HTTP Client
+# =============================================
+# Always use async with — never instantiate without the context manager.
+# All request methods are coroutines: await client.get(), await client.post(), etc.
+# One-off usage: create the client inside the async function, close on exit. if using as client = httpx.AsyncClient()
 async def fetch(URL1, headers):
     async with httpx.AsyncClient() as client:
         try:
@@ -65,17 +82,13 @@ async def main():
 # asyncio.run(main())
 
 
-# 2. last line - One client for the lifetime of your app, not one per request
-# so insted of calling the fetch() which close every connection after use,
-# we create AsyncClient connection and will use for the lifetime of app, not one per request and close the connection at the end.
-
-
-# ALSO, The below code is just showing connection pooling not Concurrency
-# It uses a single client which makes it a little fast as it avoids repeatedly creating TCP/TLS connections.
-# but without create_task or gather it still executing sequentially not "concurrently" -> which leads to huge gain in speed
-
-# Connection pooling = moderate performance improvement by reusing sockets.
-# Async concurrency (gather) = often the major performance improvement when making multiple independent requests.
+# =============================================
+# NOTE: Connection Pooling vs Concurrency
+# =============================================
+# Connection pooling (single shared client) = moderate speed gain — reuses TCP/TLS sockets.
+# Async concurrency (gather/create_task) = the major speed gain — all I/O runs in parallel.
+# The code below demonstrates pooling WITHOUT concurrency — requests still run sequentially.
+# To get both benefits: share one AsyncClient AND use gather().
 
 
 async def fetch(client, url, headers):
@@ -115,19 +128,17 @@ async def main():
 # print(asyncio.run(main()))
 
 
+# =============================================
 # 3. Timeouts
-## httpx.Timeout(connect=5.0, read=30.0, write=10.0, pool=5.0)
-
-# connect=5.0 -> Maximum time allowed to establish a TCP connection.
-### If the server is unreachable or slow to accept connections, httpx.ConnectTimeout is raised.
-# write=10.0 -> Maximum time allowed to send request data to the server. Relevant for POST,PUT,PATCH requests
-### especially when uploading large files.
-# read=30.0 -> Maximum time allowed while waiting for response data.
-###  read timeout applies whenever the client is waiting for response data, regardless of GET, POST, PUT, PATCH, DELETE, etc.
-# pool=5.0 -> If a request wait for a free connection longer than the pool timeout then httpx.PoolTimeout is raised
-### can be due to rate limiter
-# httpx.Timeout(10.0) -> single value across all phases
-# raised exception to catch -> httpx.TimeoutException
+# =============================================
+# httpx.Timeout lets you set independent deadlines for each phase of a request.
+# httpx.Timeout(connect=5.0, read=30.0, write=10.0, pool=5.0)
+# connect=5.0  → max time to establish a TCP connection (raises ConnectTimeout if exceeded)
+# write=10.0   → max time to send request data (relevant for large POST/PUT uploads)
+# read=30.0    → max time waiting for response data (applies to all methods, not just GET)
+# pool=5.0     → max time waiting for a free connection from the pool (raises PoolTimeout)
+# httpx.Timeout(10.0) → single value applied to all four phases
+# Exception to catch: httpx.TimeoutException (parent of all timeout errors)
 
 
 async def fetch(client, url, timeout):
@@ -154,7 +165,7 @@ async def main():
     URL = "https://api.github.com/users/octocat"
     timeout = httpx.Timeout(
         connect=5.0, read=30.0, write=10.0, pool=5.0
-    )  # Try to play with connect and read, make them 0 and check
+    )  # Try setting connect or read to 0 to force a timeout error
 
     async with httpx.AsyncClient() as client:
         result = await fetch(client, URL, timeout=timeout)
@@ -164,7 +175,12 @@ async def main():
 # print(asyncio.run(main()))
 
 
-# 4. Making concurrent requests (this is where it gets real)
+# =============================================
+# 4. Making Concurrent Requests
+# =============================================
+# asyncio.gather() fires all requests at the same time — total time ≈ slowest single request.
+# Compare: sequential (N * avg latency) vs concurrent (max latency) — dramatic difference.
+# RULE: always share ONE AsyncClient across all concurrent requests — enables connection reuse.
 
 
 async def fetch_github_data(client, url, headers):
@@ -217,17 +233,18 @@ async def main():
 # print(asyncio.run(main()))
 
 
+# =============================================
 # 5. Authentication
-# - auth = httpx.BasicAuth("user", "pass")
-# Either use it per request or per session
-### Per Request
-# client = httpx.Client()
-# response = client.get("https://www.example.com/", auth=auth)
-### Per Session
-# client = httpx.Client(auth=auth)
-# response = client.get("https://www.example.com/")
-
-# BasicAuth Example in Sync request
+# =============================================
+# httpx has built-in auth helpers — attach per request or for the entire client session.
+# httpx.BasicAuth("user", "pass")   → Base64-encodes credentials in Authorization header
+# httpx.BearerAuth("token")         → sets Authorization: Bearer <token> (no requests equivalent)
+# Custom auth: subclass httpx.Auth and implement auth_flow() for complex flows (OAuth, HMAC)
+#
+# Per request:  client.get(url, auth=auth)
+# Per session:  httpx.AsyncClient(auth=auth)  → applied to every request from that client
+#
+# BasicAuth sync example (commented out — uncomment to test):
 # auth = httpx.BasicAuth(username="finley", password="secret")
 # client = httpx.Client(auth=auth)
 # try:
@@ -237,22 +254,31 @@ async def main():
 #     print(f"{e}")
 
 
-#   6. Headers, params, JSON and
-#        - client.get(url, headers={}, params={})
-#        - client.post(url, json={}) — auto-sets Content-Type: application/json
-#        - client.post(url, data={}) — form data
-#        - response.json(), response.text, response.content
-# AND
-#   8. Error handling
-#        - httpx.HTTPStatusError — raised by raise_for_status()
-#        - httpx.RequestError — network-level errors (connection refused, timeout, etc.)
-#        - httpx.TimeoutException — specifically for timeouts
-####     - Know the hierarchy: RequestError is the parent of most errors
-## its basic we already using headers above for providing Bearer Token for github api, response objects and error handling as well.
+# =============================================
+# 6 & 8. Headers, Params, JSON and Error Handling
+# =============================================
+# Request building — same as requests:
+#   client.get(url, headers={}, params={})   → query string appended automatically
+#   client.post(url, json={})               → auto-sets Content-Type: application/json
+#   client.post(url, data={})               → form-encoded body
+#   response.json() / response.text / response.content
+#
+# Error hierarchy (catch in this order — most specific first):
+#   httpx.HTTPStatusError   → raised by raise_for_status() on 4xx/5xx
+#   httpx.TimeoutException  → any timeout phase (connect, read, write, pool)
+#   httpx.RequestError      → network-level errors (DNS, connection refused) — parent of TimeoutException
+#   Exception               → catch-all for unexpected errors
+#
+# NOTE: We are already using headers above (Bearer token) and error handling in every fetch() above.
+####   This section consolidates the reference for both topics.
 
 
-# 7. Streaming responses
-async def fetch_stream_data(url):
+# =============================================
+# 7. Streaming Responses
+# =============================================
+# For large responses (files, logs, event streams) — stream instead of loading all into memory.
+# client.stream() returns an async context manager; aiter_bytes() yields chunks as they arrive.
+# Normal .get() loads the full body before returning — use stream() for anything large.
     async with httpx.AsyncClient() as client:
         async with client.stream("GET", url) as response:
             response.raise_for_status()
@@ -270,7 +296,13 @@ async def main():
 # asyncio.run(main())
 
 
+# =============================================
 # 9. Retry Logic
+# =============================================
+# httpx has no built-in retry (unlike requests + urllib3's Retry adapter).
+# Write retry manually: loop with exponential backoff on TimeoutException.
+# 2**attempt gives delays of 1s, 2s, 4s ... between retries.
+# For production use, consider the tenacity library (supports async natively).
 async def fetch_request_with_retry_logic(url):
     async with httpx.AsyncClient() as client:
         for attempt in range(3):

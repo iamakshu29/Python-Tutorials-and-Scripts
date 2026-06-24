@@ -1,6 +1,12 @@
-# Make a request to a non-existent URL — what exception do you get?
-# Set a very short timeout (0.001s) — watch it fail
-# Make 20 requests with gather — measure vs sequential
+# 02_things_to_experiment.py — httpx Experiments: Break Things on Purpose
+
+# =============================================
+# EXP 1: Non-Existent URL / Short Timeout / 20 Concurrent Requests
+# =============================================
+# Three experiments in one main():
+#   1. Request to a non-existent domain — what exception fires?
+#   2. Timeout set to 0.001s — forces an immediate TimeoutException
+#   3. 20 requests sequential vs concurrent — measure the time difference
 
 import httpx
 import asyncio
@@ -34,25 +40,25 @@ async def main():
         "reduce_timeout": "https://pokeapi.co/api/v2/pokemon/charizard",
         "multi_request": "https://pokeapi.co/api/v2/pokemon/charizard",
     }
-    timeout = httpx.Timeout(0.001)
+    timeout = httpx.Timeout(0.001)  # Intentionally tiny — will trigger TimeoutException
     results = {}
 
     async with httpx.AsyncClient() as client:
-        result_1 = await fetch_url(client, URLs["non_existent_url"], timeout=3.0)
+        result_1 = await fetch_url(client, URLs["non_existent_url"], timeout=3.0)  # ConnectError expected
         results["result_1"] = result_1
 
     async with httpx.AsyncClient() as client:
-        result_2 = await fetch_url(client, URLs["reduce_timeout"], timeout)
+        result_2 = await fetch_url(client, URLs["reduce_timeout"], timeout)  # TimeoutException expected
         results["result_2"] = result_2
 
     async with httpx.AsyncClient() as client:
-        # Sequential Execution
+        # Sequential — each request waits for the previous to finish
         start_time_seq = time.perf_counter()
         for _ in range(20):
             await fetch_url(client, URLs["multi_request"], timeout=3.0)
         end_time_seq = time.perf_counter()
 
-        # Concurrent Execution
+        # Concurrent — all 20 requests fire at the same time
         start_time_conc = time.perf_counter()
         tasks = [
             fetch_url(client, URLs["multi_request"], timeout=3.0) for _ in range(20)
@@ -67,30 +73,38 @@ async def main():
 
 
 # data = asyncio.run(main())
-
 # print(json.dumps(data, indent=2))
 
 
-### Make a request WITHOUT async with (don't close the client) — check for resource warningsMake a request WITHOUT async with (don't close the client) — check for resource warnings
+# =============================================
+# EXP 2: AsyncClient Without Context Manager
+# =============================================
+# If you create AsyncClient without async with and never call aclose(),
+# Python emits a ResourceWarning about an unclosed socket.
+# Fix: always use async with, or call await client.aclose() in a finally block.
 import warnings
 
 warnings.simplefilter("always", ResourceWarning)
 
 
 async def main():
-    client = httpx.AsyncClient()  # intentionally never closed
+    client = httpx.AsyncClient()  # Intentionally not used as a context manager
 
     response = await client.get("https://pokeapi.co/api/v2/pokemon/charizard")
     print(response.status_code)
 
-    # No:
-    # await client.aclose()
+    # await client.aclose()  # Commenting this out triggers the ResourceWarning
 
 
 # asyncio.run(main())
 
 
-### Try streaming a large file — print chunk sizes to see how data arrives
+# =============================================
+# EXP 3: Streaming a Large File
+# =============================================
+# stream() opens the connection without loading the full body.
+# aiter_bytes(chunk_size=N) yields chunks of up to N bytes as they arrive.
+# Useful for large downloads, log tailing, or server-sent events.
 async def fetch_stream_data(url):
     async with httpx.AsyncClient() as client:
         async with client.stream("GET", url) as response:
