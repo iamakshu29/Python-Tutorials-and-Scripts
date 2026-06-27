@@ -35,16 +35,17 @@
        - import concurrent.futures; executor = concurrent.futures.ThreadPoolExecutor()
        - loop = asyncio.get_event_loop()
        - result = await loop.run_in_executor(executor, blocking_function, arg1, arg2)
-       - Or the modern way: await asyncio.to_thread(blocking_function, arg1, arg2)
+       - OR the modern way: await asyncio.to_thread(blocking_function, arg1, arg2)
        - Use case: calling a sync library (e.g., old database driver) from async code
        - Understand: the function runs in a thread, but you await it from your coroutine
 
   3. asyncio + ProcessPoolExecutor — true parallelism for CPU-bound work
+       - Context Manager is use for ProcessPoolExecutor -> with concurrent.futures.ProcessPoolExecutor() as executor:
        - Same interface as ThreadPoolExecutor but uses separate processes
        - Bypasses the GIL — actual parallel CPU execution
        - Use case: image resizing, data transformation, ML inference
        - Cost: process startup overhead, no shared memory — data must be serializable
-       - loop.run_in_executor(process_executor, cpu_intensive_function, data)
+       - await loop.run_in_executor(process_executor, cpu_intensive_function, data)
 
   4. asyncio.gather vs asyncio.wait
        - gather: run all, wait for ALL to finish, return results in order

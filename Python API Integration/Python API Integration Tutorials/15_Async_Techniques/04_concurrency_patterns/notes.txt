@@ -1,0 +1,214 @@
+================================================================================
+CONCEPT 2 — asyncio + ThreadPoolExecutor
+================================================================================
+
+WHAT IT DOES:
+  ThreadPoolExecutor is a pool of pre-created threads sitting idle, ready to run
+  work. When you give it a function, it picks a free thread from the pool and
+  runs your function there — NOT on the main thread (event loop thread).
+
+  "Pool" means threads are created in advance and reused — spinning up a thread
+  has overhead, so instead of creating/destroying one per call, you reuse them.
+
+WITHOUT ThreadPoolExecutor:
+  Main Thread (event loop)
+    │
+    ├─ coroutine A runs
+    ├─ time.sleep(5)  ← main thread is stuck here, NOTHING else can run
+    └─ coroutine B waits... waits... waits...
+
+WITH ThreadPoolExecutor (asyncio.to_thread):
+  Main Thread (event loop)         Worker Thread (from pool)
+    │                                    │
+    ├─ coroutine A: "offload to thread" ─┤
+    ├─ event loop is FREE                ├─ time.sleep(5) runs here
+    ├─ coroutine B runs freely           │
+    ├─ coroutine B runs freely           │
+    └─ coroutine A resumes ◄─────────── done, result returned
+
+DOES IT MAKE SYNC CODE ASYNC?
+  No. The function stays sync. It just runs it in a separate thread so the
+  event loop thread isn't the one doing the waiting/blocking.
+
+WHY NOT JUST USE asyncio.sleep(5) INSTEAD?
+  Because asyncio.sleep is something YOU control — it's already async-native.
+  The real problem is code you DON'T control:
+    - psycopg2 (old postgres driver — sync only, no async version)
+    - requests.get(url) — the requests library is sync only
+    - reading a large file with open().read()
+    - any legacy SDK
+
+  time.sleep() in examples = "pretend this is psycopg2.connect() or
+  requests.get() that you can't make async."
+
+  asyncio.to_thread answers: "I have this blocking function from a library I
+  can't modify. How do I call it from async code without freezing the event loop?"
+  Answer: offload it to a thread.
+
+HOW TO SHOW BLOCKING — need TWO concurrent tasks:
+  Without a second concurrent coroutine, you can't see blocking.
+  Pattern:
+    Task A: calls time.sleep(5) directly     ← the blocker
+    Task B: prints "I'm alive" every 1 sec   ← the victim
+
+  - Without to_thread: Task B is completely silent for 5 seconds (frozen)
+  - With to_thread:    Task B prints every second freely while Task A sleeps
+
+THE GIL LIMIT:
+  GIL = Global Interpreter Lock. Python's rule: only ONE thread can execute
+  Python bytecode at a time. Always. Even with 8 threads and 8 CPU cores.
+
+  BUT the GIL gets RELEASED during I/O operations. When a thread calls
+  time.sleep(), a network call, or reads a file — it's not running Python code,
+  it's waiting on the OS. During that wait, the GIL is released and another
+  thread can run.
+
+  Thread 1: [Python code]──[waiting on network — GIL released]──[Python code]
+  Thread 2:                 [Python code runs here while T1 waits]
+
+  For I/O-bound blocking code   → ThreadPoolExecutor works great
+  For CPU-bound (pure Python loops) → GIL is NEVER released, threads just take
+                                      turns, no real parallelism. Use processes.
+
+INSIDE ONE PROCESS — threads share everything:
+  When you run python example.py, OS creates one process. Inside that process:
+    - One Python interpreter
+    - One GIL
+    - One memory space
+    - One main thread (by default)
+
+  Threads from ThreadPoolExecutor live INSIDE that same process. They share the
+  same memory, same interpreter, same GIL — like roommates in one house.
+
+  Process (your Python program)
+  │
+  ├── Memory space  ← shared by ALL threads
+  ├── GIL           ← shared by ALL threads
+  ├── Interpreter   ← shared by ALL threads
+  │
+  ├── Main Thread   (event loop runs here)
+  ├── Worker Thread 1  (from ThreadPoolExecutor)
+  ├── Worker Thread 2  (from ThreadPoolExecutor)
+  └── Worker Thread 3  (from ThreadPoolExecutor)
+
+
+================================================================================
+CONCEPT 3 — asyncio + ProcessPoolExecutor
+================================================================================
+
+WHAT IT IS:
+  A process = a completely separate running program instance. Each has its own:
+    - Memory space
+    - Python interpreter
+    - Its own GIL
+  They run on separate CPU cores truly in parallel.
+
+THREAD vs PROCESS:
+  ┌──────────────┬──────────────────────────────┬────────────────────────────┐
+  │              │ Thread                       │ Process                    │
+  ├──────────────┼──────────────────────────────┼────────────────────────────┤
+  │ Memory       │ Shared with parent           │ Completely separate        │
+  │ GIL          │ Shared — one at a time       │ Each has its own — parallel │
+  │ Startup cost │ Cheap                        │ Expensive (full Python)    │
+  │ Communication│ Easy (shared variables)      │ Hard (must serialize data) │
+  └──────────────┴──────────────────────────────┴────────────────────────────┘
+
+WHY PROCESSES BYPASS THE GIL:
+  Each process has its own Python interpreter with its own GIL. They don't
+  share anything — so they genuinely run on separate CPU cores simultaneously.
+
+  Process 1 (core 1):  [Python code]──[Python code]──[Python code]
+  Process 2 (core 2):  [Python code]──[Python code]──[Python code]
+                        ↑ truly parallel, no waiting on each other
+
+HOW ProcessPoolExecutor WORKS:
+  When you run python example.py, OS creates Process 1 (your main script).
+  When ProcessPoolExecutor starts, it uses the OS to SPAWN brand new child
+  processes — the OS literally launches new python instances.
+
+  OS
+  │
+  ├── Process 1 (your example.py)          ← started by you
+  │     └── ProcessPoolExecutor.submit(cpu_heavy, data)
+  │               └── OS: "spawn new python process"
+  │
+  ├── Process 2 (worker — spawned by P1)   ← started by ProcessPoolExecutor
+  │     └── runs cpu_heavy(data)
+  │
+  └── Process 3 (worker — spawned by P1)   ← started by ProcessPoolExecutor
+        └── runs cpu_heavy(data)
+
+DATA SHARING VIA PIPE (serialization):
+  Processes don't share memory — they COPY data through an OS pipe.
+  ProcessPoolExecutor sets this pipe up automatically.
+
+  Parent Process                          Child Process
+  (example.py)                            (worker)
+       │                                      │
+       │  pickle(cpu_heavy, data)             │
+       │ ────────── pipe ──────────────────► │
+       │                                      │  unpickle → run cpu_heavy(data)
+       │                                      │  pickle(result)
+       │ ◄────────── pipe ──────────────────  │
+       │  unpickle → result                   │
+
+  - data you pass must be picklable (basic types, lists, dicts = fine;
+    lambdas, DB connections = NOT picklable)
+  - there's overhead per call — not worth it for trivial tasks
+
+CAN YOU DO THE PIPE MANUALLY?
+  Yes — using multiprocessing.Pipe() or multiprocessing.Queue() from stdlib.
+  ProcessPoolExecutor hides all that boilerplate behind a clean interface.
+  Use manual pipes when you need streaming or bidirectional communication.
+
+THE REAL LESSON OF CONCEPT 3 — TIMING (not blocking):
+  Concept 2 shows blocking. Concept 3 shows TRUE PARALLELISM = speed.
+  The right demo is a timing comparison:
+
+  Sequential (3 tasks one after another):  ~3.0s
+  Parallel   (3 tasks in 3 processes):     ~1.1s
+
+  BUT — on Windows, process startup overhead is significant (~0.5–1s per
+  process). If the actual work is small (e.g., 5_000_000 iterations = 0.3s),
+  the overhead dominates and parallel APPEARS slower.
+
+  RULE: ProcessPoolExecutor is only worth it when the CPU work is heavy enough
+  to justify the process startup + serialization overhead.
+  Try 50_000_000+ iterations to actually see parallel win.
+
+WINDOWS GOTCHA:
+  On Windows, always use:
+    if __name__ == "__main__":
+        asyncio.run(main())
+
+  Without this, Windows re-imports the whole script in each worker process and
+  crashes with a RuntimeError about spawning before bootstrapping completes.
+
+FULL PATTERN:
+  import asyncio
+  import concurrent.futures
+
+  def cpu_heavy(n):          # regular sync function — NOT async
+      result = 0
+      for i in range(n):
+          result += i * i
+      return result
+
+  async def run_heavy(n, executor):
+      loop = asyncio.get_running_loop()
+      return await loop.run_in_executor(executor, cpu_heavy, n)
+
+  async def main():
+      with concurrent.futures.ProcessPoolExecutor() as executor:
+          results = await asyncio.gather(
+              run_heavy(50_000_000, executor),
+              run_heavy(50_000_000, executor),
+              run_heavy(50_000_000, executor),
+          )
+      print(results)
+
+  if __name__ == "__main__":
+      asyncio.run(main())
+
+  NOTE: asyncio.to_thread shortcut does NOT work for ProcessPoolExecutor.
+  You must use loop.run_in_executor() explicitly.
