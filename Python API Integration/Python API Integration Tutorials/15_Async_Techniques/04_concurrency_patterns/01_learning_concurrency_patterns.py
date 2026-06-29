@@ -152,20 +152,25 @@ async def demo_c3_non_blocking():
     print("=== CONCEPT 3: NON-BLOCKING (cpu_heavy via ProcessPoolExecutor) ===")
     await asyncio.gather(cpu_blocker_fixed(10_000_000), the_victim())
 
-if __name__ == "__main__":
-    # --- Concept 2: I/O-bound blocking (time.sleep) ---
-    asyncio.run(demo_c2_blocking())
-    print()
-    asyncio.run(demo_c2_non_blocking())
-    print()
+# if __name__ == "__main__":
+#     # --- Concept 2: I/O-bound blocking (time.sleep) ---
+#     asyncio.run(demo_c2_blocking())
+#     print()
+#     asyncio.run(demo_c2_non_blocking())
+#     print()
 
-    # --- Concept 3A: CPU-bound timing (sequential vs parallel speed) ---
-    asyncio.run(demo_c3_sequential())
-    asyncio.run(demo_c3_parallel())
-    print()
+#     # --- Concept 3A: CPU-bound timing (sequential vs parallel speed) ---
+#     asyncio.run(demo_c3_sequential())
+#     asyncio.run(demo_c3_parallel())
+#     print()
 
-    # --- Concept 3B: CPU-bound blocking (same blocker+victim pattern as concept 2) ---
-    asyncio.run(demo_c3_blocking())
-    print()
-    asyncio.run(demo_c3_non_blocking())
+#     # --- Concept 3B: CPU-bound blocking (same blocker+victim pattern as concept 2) ---
+#     asyncio.run(demo_c3_blocking())
+#     print()
+#     asyncio.run(demo_c3_non_blocking())
+
+
+# ================================================================================
+# CONCEPT 4 — asyncio.gather vs asyncio.wait
+# ================================================================================
 

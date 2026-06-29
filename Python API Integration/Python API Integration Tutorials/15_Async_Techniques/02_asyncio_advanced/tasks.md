@@ -21,10 +21,11 @@
 
 ## Concepts to Master
 
-  1. asyncio.Task — deeper understanding
+  1. asyncio.Task — deeper understanding (Tricky but important)
        - create_task() schedules a coroutine; it runs concurrently with you
        - task.cancel() — how to cancel a running task
        - task.cancelled(), task.done(), task.result(), task.exception()
+       - asyncio.current_task().cancel() - Requests cancellation of the currently running coroutine
        - CancelledError — what it is and how to handle it in the cancelled task
        - Understand: cancelling a task doesn't kill it instantly — it injects CancelledError at the next await
 
@@ -33,6 +34,9 @@
        - async with asyncio.TaskGroup() as tg: tg.create_task(coro())
        - Key difference from gather: if ONE task fails, ALL others are cancelled
        - Know when to use TaskGroup vs gather (structured vs fire-and-forget)
+       - Use .result() to get the return value of a task
+         - task= tg.create_task(task_1())
+         - return task.result()
 
   3. asyncio.wait_for()
        - Run a coroutine with a timeout

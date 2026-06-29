@@ -134,6 +134,7 @@ async def main():
     task2 = asyncio.create_task(fetch_parsed_data_3())  # Also scheduled — both run concurrently
     result = []
     # Awaiting here retrieves each task's result — both have been running concurrently since creation
+    # main() waits until both tasks finishes
     # result.append(await task1)
     # result.append(await task2)
     end = time.perf_counter()

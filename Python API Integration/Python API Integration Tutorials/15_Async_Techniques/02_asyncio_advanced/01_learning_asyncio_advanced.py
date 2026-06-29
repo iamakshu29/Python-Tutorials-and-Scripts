@@ -29,12 +29,13 @@ async def topic_1():
 async def topic_2():
     print("Topic 2")
     await asyncio.sleep(1)
-    return "done"
+    return "topic 2 returns done"
 
 
 async def topic_3():
-    print("Topic 3")
+    print("Topic 3 started")
     await asyncio.sleep(1)
+    print("Topic 3 ended")
 
 
 async def main():
@@ -42,11 +43,14 @@ async def main():
     task_2 = asyncio.create_task(topic_2())
     task_3 = asyncio.create_task(topic_3())
 
+    task_1.cancel()   # Injects CancelledError into task_1 at its next await
+
     await asyncio.gather(task_2, task_3)  # Let task_2 and task_3 finish; task_1 is still running
 
-    task_1.cancel()   # Injects CancelledError into task_1 at its next await
+    # task_1.cancel() # Try executing this by commenting upper task_1.cancel()
+
     try:
-        await task_1  # Re-raises CancelledError here
+        await task_1  # Re-raises CancelledError here, as main() waits for the execution of cancelled task i.e. task_1
     except asyncio.CancelledError:
         print("Task was cancelled")
 
@@ -55,7 +59,7 @@ async def main():
 
     print("Are other tasks done ? ", task_2.done() and task_3.done())  # True
 
-    print("Task 2 result ", task_2.result())       # Returns the return value
+    print("Task 2 result: ", task_2.result())       # Returns the return value
     print("Task 3 any exception ? ", task_3.exception())  # None — no exception was raised
 
 
@@ -79,7 +83,7 @@ async def topic_4():
 
 async def main():
     async with asyncio.TaskGroup() as tg:
-        tg.create_task(topic_4())   # Will raise ValueError — causes all other tasks to be cancelled
+        # tg.create_task(topic_4())   # Will raise ValueError — causes all other tasks to be cancelled
         t2 = tg.create_task(topic_2())
         tg.create_task(topic_3())
 
@@ -223,6 +227,7 @@ async def consumer(name, queue):
 
         if item is None:
             queue.task_done()  # None was put() so counter went up — must bring it back down
+            print(f"Consumer {name} exiting")
             break              # task_done() must be BEFORE break; after break is unreachable
 
         print(f"{name} Consumed {item}")
@@ -246,7 +251,7 @@ async def main():
         await task           # Each consumer has exited via the None sentinel
 
 
-asyncio.run(main())
+# asyncio.run(main())
 
 
 # =============================================
@@ -356,4 +361,4 @@ async def main():
     await asyncio.gather(get_db(event), fetch_data(event))  # run concurrently
 
 
-# asyncio.run(main())
+asyncio.run(main())

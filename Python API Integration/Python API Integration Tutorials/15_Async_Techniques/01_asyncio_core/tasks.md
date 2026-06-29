@@ -56,7 +56,9 @@
        - Schedule a coroutine to run "in the background"
        - Understand the difference from just calling await coroutine()
        - Task starts immediately when the event loop gets a chance
-       - You can await the task later to get its result
+       - You can await the task later to finish execution and get its result 
+         - task = asyncio.create_task()
+         - await task
 
   7. Timing and understanding the event loop
        - Use time.perf_counter() to measure actual elapsed time
