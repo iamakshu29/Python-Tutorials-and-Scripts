@@ -65,6 +65,43 @@
        - Perfect for: "show results as they arrive" (like a progress feed)
        - The order of results is NOT the order of input — it's arrival order
 
+  ---
+  WHY SO MANY WAYS TO GET RESULTS FROM ASYNC TASKS?
+
+  Because different situations need different levels of control over WHEN you get results:
+
+    create_task + await
+       → You start tasks manually and collect results manually one by one.
+         All tasks run in parallel (create_task starts them immediately),
+         but YOU decide when to await each one.
+         Best when you have a small fixed number of tasks and need each result separately.
+
+    gather
+       → You hand over a list of tasks and get ALL results back at once — but only
+         after the SLOWEST task finishes. Simple, clean, no manual awaiting.
+         Best when you need everything before you can proceed (e.g., fetch user + profile + settings).
+
+    TaskGroup (Python 3.11+)
+       → Same as gather but safer — if one task crashes, all others are cancelled.
+         Best when all tasks must succeed together or not at all.
+
+    wait
+       → Like gather but YOU control when to stop waiting.
+         Returns (done, pending) sets so you can cancel leftovers or await them later.
+         Best when you want "give me the first result and cancel the rest" or need a timeout.
+
+    as_completed
+       → You don't wait for all tasks — you process each result the MOMENT it's ready.
+         The slowest task doesn't block you from seeing the fast ones.
+         Best for: bulk API calls, webhooks, live feeds — anywhere results should
+         be handled as they arrive, not all at once at the end or manually.
+
+  One-line rule:
+    Need everything at once?        → gather / TaskGroup
+    Need first result only?         → wait with FIRST_COMPLETED
+    Need each result as it arrives? → as_completed
+  ---
+
   6. Rate limiting patterns
        - Pattern 1: Semaphore — limit concurrent tasks (you know this from Module 02)
        - Pattern 2: Token bucket — more sophisticated; allows bursts up to a limit
