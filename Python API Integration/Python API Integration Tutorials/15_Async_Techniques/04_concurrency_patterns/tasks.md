@@ -47,14 +47,17 @@
        - Cost: process startup overhead, no shared memory — data must be serializable
        - await loop.run_in_executor(process_executor, cpu_intensive_function, data)
 
-  4. asyncio.gather vs asyncio.wait
+  4. asyncio.gather vs asyncio.wait (bit Tricky)
+       - asyncio.wait runs a collection of awaitables concurrently and returns two sets: done and pending. Unlike asyncio.gather, it gives you fine-grained control over when to stop waiting.
        - gather: run all, wait for ALL to finish, return results in order
          → if one fails (and return_exceptions=False), it raises immediately
        - asyncio.wait: more control — you define conditions
-         → FIRST_COMPLETED: returns as soon as ONE finishes
-         → FIRST_EXCEPTION: returns as soon as one raises
-         → ALL_COMPLETED: same as gather but gives you futures instead of results
+         → asyncio.FIRST_COMPLETED: returns as soon as ONE finishes
+         → asyncio.FIRST_EXCEPTION: returns as soon as one raises
+         → asyncio.ALL_COMPLETED: same as gather but gives you futures instead of results
        - Use wait when you want to process results AS THEY COMPLETE
+       - syntax
+          - done, pending = await asyncio.wait(tasks, return_when=asyncio.ALL_COMPLETED)
 
   5. asyncio.as_completed()
        - Takes a list of coroutines, yields futures as each one finishes

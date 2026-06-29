@@ -173,4 +173,89 @@ async def demo_c3_non_blocking():
 # ================================================================================
 # CONCEPT 4 — asyncio.gather vs asyncio.wait
 # ================================================================================
+# Goal: show the difference between gather (collect all results) and
+# wait (react to tasks as they finish, with control over when to stop).
+#
+# gather:  returns a list of results in INPUT ORDER, only after ALL tasks finish.
+#          raises immediately if any task raises (unless return_exceptions=True).
+#
+# wait:    returns (done, pending) sets.
+#          done    → tasks that finished — safe to call .result() on.
+#          pending → tasks still running — calling .result() raises InvalidStateError.
+#
+# return_when flags:
+#   ALL_COMPLETED   → wait for every task (default)
+#   FIRST_COMPLETED → return as soon as any ONE task finishes
+#   FIRST_EXCEPTION → return as soon as any ONE task raises
+#
+# What to do with pending:
+#   Cancel:      for task in pending: task.cancel()
+#   Await later: done2, _ = await asyncio.wait(pending)
 
+async def task_a():
+    print("task a started")
+    await asyncio.sleep(1)
+    print("task a ended")
+    return "a"
+
+async def task_b():
+    print("task b started")
+    await asyncio.sleep(5)
+    print("task b ended")
+    return "b"
+
+async def demo_gather():
+    # Waits for BOTH tasks, returns ["a", "b"] in input order.
+    return await asyncio.gather(task_a(), task_b())
+
+async def demo_wait():
+    # Must wrap coroutines in create_task — wait() requires Task objects, not bare coroutines.
+    tasks = [
+        asyncio.create_task(task_a()),
+        asyncio.create_task(task_b())
+    ]
+    # FIRST_COMPLETED: returns as soon as task_a finishes (1s).
+    # done = {task_a}, pending = {task_b} (still running — do NOT call .result() on pending).
+    # Try ALL_COMPLETED to see both tasks finish before returning.
+    done, pending = await asyncio.wait(tasks, return_when=asyncio.FIRST_COMPLETED)
+    for task in done:
+        print("Wait results", task.result())
+
+async def main():
+    await demo_wait()
+    return await demo_gather()
+
+# print(asyncio.run(main()))
+
+# ================================================================================
+# CONCEPT 5 — asyncio.as_completed()
+# ================================================================================
+# Goal: process results as each task finishes — fastest first, not input order.
+#
+# as_completed() starts ALL coroutines concurrently and returns an iterator
+# of futures. Each iteration yields the NEXT future that completes.
+#
+# You still need to await each future — as_completed gives you a HANDLE, not
+# the result. await future pauses until that specific task is done, then
+# gives the value.
+#
+# vs gather:  gather waits for ALL (5s total), then gives ["a", "b"] together.
+#             as_completed gives "a" at t=1s, then "b" at t=5s — process early.
+#
+# When to use: fetching multiple URLs, showing results as they arrive instead
+#              of waiting for the slowest one before displaying anything.
+
+async def demo_as_compelted():
+    coros = [task_a(), task_b()]
+    result = []
+    for future in asyncio.as_completed(coros):
+        # All coroutines are already running concurrently.
+        # await here pauses until THIS specific future finishes — not all of them.
+        # Order of results = completion order: "a" arrives at t=1s, "b" at t=5s.
+        res = await future
+        print(f"Got result: {res!r}")
+        result.append(res)
+    return result
+
+# print(asyncio.run(demo_as_compelted()))
+asyncio.run(demo_as_compelted())
