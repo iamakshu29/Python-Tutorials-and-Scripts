@@ -258,4 +258,118 @@ async def demo_as_compelted():
     return result
 
 # print(asyncio.run(demo_as_compelted()))
-asyncio.run(demo_as_compelted())
+# asyncio.run(demo_as_compelted())
+
+# ================================================================================
+# CONCEPT 6 — Rate limiting patterns
+# ================================================================================
+
+# Pattern 1 — Semaphore
+# ================================================================================
+
+start = time.perf_counter()
+
+def log(msg):
+    print(f"{time.perf_counter() - start:.1f}s | {msg}")
+
+async def db_connect(semaphore,db):
+    async with semaphore:
+        log(f"Querying {db}")
+        await asyncio.sleep(3)
+        log(f"Connected {db}")
+
+async def main():
+    semaphore = asyncio.Semaphore(3)
+
+    db_pool = ["paymentDB","imageDB","cartDB","passwordDB","usernameDB","servicesDB","applicationsDB","middlewareDB"]
+    tasks = [asyncio.create_task(db_connect(semaphore,db)) for db in db_pool]
+    
+    await asyncio.gather(*tasks)
+
+# asyncio.run(main())
+
+
+# Pattern 2 — Token Bucket
+# ================================================================================
+
+async def refill_tokens_indefinitely(lock, token_count, token_to_create):
+    while True:
+        await asyncio.sleep(1)
+
+        async with lock:
+            if token_count["count"] < token_to_create:
+                token_count["count"] += 1
+
+async def hit_request_with_retry(lock, token_count, req):
+    print("Sending request: ", req)
+    await asyncio.sleep(1)
+    try:
+        async with lock:
+            if token_count["count"] > 0:
+                print("Request Sent successfully")
+                token_count["count"] -= 1
+                print(f"balance remaining: {token_count["count"]}")
+        await asyncio.sleep(20)
+        async with lock:
+            print("Trying again")
+            print(f"balance remaining: {token_count["count"]}")
+            if token_count["count"] > 0:
+                print("Request Sent successfully")
+                token_count["count"] -= 1
+                print(f"balance remaining: {token_count["count"]}")
+    except ValueError as e:
+        print("All tokens Exhausted, unable to sent request")
+
+async def refill_tokens(lock, token_count):
+    await asyncio.sleep(2)
+    async with lock:
+        token_count["count"] += 1
+
+async def hit_request(lock, token_count, req):
+    print("Sending request: ", req)
+    await asyncio.sleep(1)
+    try:
+        async with lock:
+            if token_count["count"] > 0:
+                print("Request Sent successfully")
+                token_count["count"] -= 1
+                print(f"balance remaining: {token_count["count"]}")
+            else:
+                raise ValueError
+    except ValueError as e:
+        print("All tokens Exhausted, unable to sent request")
+
+async def main():
+    lock = asyncio.Lock()
+    token_count = {"count": 0}
+    token_to_create = 10
+
+    create_token = [asyncio.create_task(refill_tokens(lock,token_count)) for _ in range(token_to_create)]
+
+    await asyncio.gather(*create_token)
+    print("Token created",token_count["count"])
+    sending_request = [asyncio.create_task(hit_request(lock,token_count,req)) for req in range(1,12)]
+
+    await asyncio.gather(*sending_request)
+
+
+# asyncio.run(main())
+
+async def main_2():
+    lock = asyncio.Lock()
+    token_count = {"count": 0}
+    token_to_create = 10
+    request_to_send = 15
+
+    create_token = asyncio.create_task(refill_tokens_indefinitely(lock,token_count, token_to_create))
+
+    sending_request = [asyncio.create_task(hit_request_with_retry(lock,token_count,req)) for req in range(1,request_to_send)]
+
+    await asyncio.gather(*sending_request)
+
+# asyncio.run(main_2())
+
+
+
+# Pattern 3 — asyncio.sleep
+# ================================================================================

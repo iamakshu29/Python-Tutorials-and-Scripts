@@ -309,6 +309,7 @@ async def main():
 # =============================================
 # 7. asyncio.Semaphore — Rate Limiting
 # =============================================
+# Codewise, we need to use the combination of create_task and gather (to await all the tasks)
 # A Semaphore allows up to N coroutines to enter the block concurrently.
 # The rest wait until a slot frees up.
 # Primary use case: limit parallel outbound connections or API calls.
@@ -316,10 +317,12 @@ async def main():
 
 
 async def fetch(url, sem):
-    print("Trying to fetch url")
-    async with sem:  # each coroutine tries to acquire — first 3 get in, rest wait
-        print("Fetching URL", url)
-        await asyncio.sleep(random.uniform(1, 3))
+    print(f"{url}: trying to acquire semaphore")
+
+    async with sem:
+        print(f"{url}: acquired semaphore")
+        await asyncio.sleep(3)
+        print(f"{url}: fetched")
 
 
 async def main():
@@ -330,8 +333,7 @@ async def main():
     print("All url fetched \n")
 
 
-# asyncio.run(main())
-
+asyncio.run(main())
 
 # =============================================
 # 8. asyncio.Event — Signaling Between Coroutines
@@ -361,4 +363,4 @@ async def main():
     await asyncio.gather(get_db(event), fetch_data(event))  # run concurrently
 
 
-asyncio.run(main())
+# asyncio.run(main())
