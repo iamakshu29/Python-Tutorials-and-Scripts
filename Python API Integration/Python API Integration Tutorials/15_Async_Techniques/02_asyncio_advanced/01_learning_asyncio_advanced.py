@@ -201,6 +201,9 @@ async def main():
 # queue.task_done()   → decrements the unfinished-work counter (pair with every get())
 # queue.join()        → blocks until the unfinished-work counter reaches 0
 #
+# task_done() is the critical piece that makes queue.join() work at all
+# Without task_done() inside the consumer, queue.join() would wait forever — the counter never reaches 0.
+#
 # Sentinel pattern: producer puts one None per consumer to signal "no more work — exit".
 #
 # Counter lifecycle:
@@ -233,7 +236,6 @@ async def consumer(name, queue):
         print(f"{name} Consumed {item}")
         queue.task_done()      # Signals that this item has been fully processed; counter -1
 
-
 async def main():
     queue = asyncio.Queue()
     num_consumers = 3
@@ -245,11 +247,16 @@ async def main():
 
     await producer_task      # Wait for producer to finish putting all items
 
+    # for task in consumer_tasks:
+    #     await task
+
+    # queue.join() blocks until every item that was ever put() into the queue has had
+    # task_done() called — it's tied to the queue's item lifecycle, not the task objects.
+    # So it's like gather but from the queue's perspective — it ensures every produced
+    # item was fully processed by a consumer, regardless of how many consumers you have
+    # or which one picked it up.
+    # This is the clean pattern: use queue.join() instead of awaiting consumer tasks.
     await queue.join()       # Wait until every item has been processed (counter == 0)
-
-    for task in consumer_tasks:
-        await task           # Each consumer has exited via the None sentinel
-
 
 # asyncio.run(main())
 
