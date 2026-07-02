@@ -117,7 +117,7 @@
        - Understand: without maxsize, a fast producer can fill memory before consumers catch up
        - Practice: set Queue(maxsize=5) with a fast producer and a slow consumer — watch it
 
-  8. Circuit breaker pattern (conceptual + implementation)
+  8. Circuit breaker pattern (conceptual + implementation) (IMPORTANT For Interview Discussion)
        - Problem: if a service is down, you keep hammering it with requests (and failing fast)
        - Circuit breaker: after N failures, "open" the circuit — stop trying for a cooldown period
        - States: CLOSED (normal) → OPEN (failing, don't try) → HALF-OPEN (test one request)

@@ -460,49 +460,5 @@ async def main():
 # ================================================================================
 # CONCEPT 8 — Circuit breaker pattern (conceptual + implementation)
 # ================================================================================
+##### Implemented in another File name 08_circuit_breaker.py #####
 
-"""
-  8. Circuit breaker pattern (conceptual + implementation)
-       - Problem: if a service is down, you keep hammering it with requests (and failing fast)
-       - Circuit breaker: after N failures, "open" the circuit — stop trying for a cooldown period
-       - States: CLOSED (normal) → OPEN (failing, don't try) → HALF-OPEN (test one request)
-       - Implement a simple CircuitBreaker class that wraps an async function
-"""
-
-class CircuitBreaker:
-    def __init__(self, state, state_change_in):
-        self.state = state
-        self.state_change_in = state_change_in
-
-    async def service_circuit(self):
-        state = self.state
-        if state == "CLOSED":
-            print("Service is down")
-            await asyncio.sleep(self.state_change_in)
-            state = "OPEN"
-        elif state == "OPEN": 
-            print("Service is already up")
-        else:
-            print("Service is HALF OPEN")
-            await asyncio.sleep(1)
-            state = "CLOSED"
-
-    async def break_and_reset(self, no_of_requests, failure):
-        count = 0
-        for i in range(no_of_requests):
-            if count < failure:
-                print(f"Trying {i} time")
-                await self.service_circuit()
-                count += 1
-            else:
-                print(f"Cool down period Start, wait for {self.state_change_in}")
-                self.state = "OPEN"
-                await self.service_circuit()
-
-
-async def main():
-    web_service = CircuitBreaker("CLOSED", 10)
-    await web_service.service_circuit()
-    await web_service.break_and_reset(10, 3)
-
-asyncio.run(main())
