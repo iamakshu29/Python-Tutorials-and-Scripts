@@ -292,33 +292,8 @@ async def main():
 # Pattern 2 — Token Bucket
 # ================================================================================
 
-async def refill_tokens_indefinitely(lock, token_count, token_to_create):
-    while True:
-        await asyncio.sleep(1)
-
-        async with lock:
-            if token_count["count"] < token_to_create:
-                token_count["count"] += 1
-
-async def hit_request_with_retry(lock, token_count, req):
-    print("Sending request: ", req)
-    await asyncio.sleep(1)
-    try:
-        async with lock:
-            if token_count["count"] > 0:
-                print("Request Sent successfully")
-                token_count["count"] -= 1
-                print(f"balance remaining: {token_count["count"]}")
-        await asyncio.sleep(20)
-        async with lock:
-            print("Trying again")
-            print(f"balance remaining: {token_count["count"]}")
-            if token_count["count"] > 0:
-                print("Request Sent successfully")
-                token_count["count"] -= 1
-                print(f"balance remaining: {token_count["count"]}")
-    except ValueError as e:
-        print("All tokens Exhausted, unable to sent request")
+# Finite Tokens bucket
+# ================================================================================
 
 async def refill_tokens(lock, token_count):
     await asyncio.sleep(2)
@@ -352,10 +327,44 @@ async def main():
 
     await asyncio.gather(*sending_request)
 
-
 # asyncio.run(main())
 
-async def main_2():
+
+# Infinite Tokens Bucket
+# ================================================================================
+
+# - Token will keep on increasing at rate for 1 sec. We are not awaiting the result as the tokens are creating as infinteloop. So let the tokens create in background only.
+
+async def refill_tokens_indefinitely(lock, token_count, token_to_create):
+    while True:
+        await asyncio.sleep(1)
+
+        async with lock:
+            if token_count["count"] < token_to_create:
+                token_count["count"] += 1
+
+async def hit_request_with_retry(lock, token_count, req):
+    print("Sending request: ", req)
+    await asyncio.sleep(1)
+    try:
+        async with lock:
+            if token_count["count"] > 0:
+                print("Request Sent successfully")
+                token_count["count"] -= 1
+                print(f"balance remaining: {token_count["count"]}")
+        await asyncio.sleep(20)
+        async with lock:
+            print("Trying again")
+            print(f"balance remaining: {token_count["count"]}")
+            if token_count["count"] > 0:
+                print("Request Sent successfully")
+                token_count["count"] -= 1
+                print(f"balance remaining: {token_count["count"]}")
+    except ValueError as e:
+        print("All tokens Exhausted, unable to sent request")
+
+
+async def main():
     lock = asyncio.Lock()
     token_count = {"count": 0}
     token_to_create = 10
@@ -367,9 +376,133 @@ async def main_2():
 
     await asyncio.gather(*sending_request)
 
-# asyncio.run(main_2())
+# asyncio.run(main())
 
 
 
 # Pattern 3 — asyncio.sleep
 # ================================================================================
+
+async def task(i):
+    print(f"task {i} started")
+    await asyncio.sleep(1)
+    print(f"task {i} ended")
+
+async def rate_limiting_sleep_pattern():
+    rate_limit = 3
+
+    count = 0
+    results = []
+    for i in range(10):
+        if count >= rate_limit:
+            await asyncio.sleep(4)
+            count = 0
+        results.append(asyncio.create_task(task(i)))
+        count += 1
+
+    for i in range(len(results)):
+        await results[i]
+
+async def main():
+    await rate_limiting_sleep_pattern()
+
+# asyncio.run(main())
+
+
+# ================================================================================
+# CONCEPT 7 — Producer-consumer with backpressure
+# ================================================================================
+# Producer is faster than consumers → queue fills to maxsize=12 → await queue.put(i) blocks the producer — that's backpressure actually triggering.
+async def fast_producer(queue, num_of_msg, consumer_size):
+    for i in range(num_of_msg):
+        print(f"Producing {i}")
+        await queue.put(i)
+        await asyncio.sleep(1)
+    for _ in range(consumer_size):
+        await queue.put(None)
+        
+
+async def slow_consumer(queue, consumer_name):
+    while True:
+        msg = await queue.get()
+        if msg is None:
+            queue.task_done()
+            print(f"Consumer {consumer_name} exiting")
+            break
+        else:
+            print(f"Consumer {consumer_name} Processing message {msg}")
+            await asyncio.sleep(5)
+            print(f"Message {msg} processed")
+            queue.task_done()
+
+
+async def main():
+    queue = asyncio.Queue(maxsize=12)
+    consumers = ["web","app"]
+    num_of_msg = 20
+
+    producer_task = asyncio.create_task(fast_producer(queue,num_of_msg,len(consumers)))
+    
+
+    consumer_tasks = [asyncio.create_task(slow_consumer(queue, consumer)) for consumer in consumers]
+    
+    await producer_task
+    
+    # await asyncio.gather(*consumer_tasks)
+# Instead of awaiting we use queue.join() method. as it also waits for all the message to get processed
+## check 01_learning_asyncio_advanced.py -> queue section for better understanding
+
+    await queue.join()
+
+
+# asyncio.run(main())
+
+# ================================================================================
+# CONCEPT 8 — Circuit breaker pattern (conceptual + implementation)
+# ================================================================================
+
+"""
+  8. Circuit breaker pattern (conceptual + implementation)
+       - Problem: if a service is down, you keep hammering it with requests (and failing fast)
+       - Circuit breaker: after N failures, "open" the circuit — stop trying for a cooldown period
+       - States: CLOSED (normal) → OPEN (failing, don't try) → HALF-OPEN (test one request)
+       - Implement a simple CircuitBreaker class that wraps an async function
+"""
+
+class CircuitBreaker:
+    def __init__(self, state, state_change_in):
+        self.state = state
+        self.state_change_in = state_change_in
+
+    async def service_circuit(self):
+        state = self.state
+        if state == "CLOSED":
+            print("Service is down")
+            await asyncio.sleep(self.state_change_in)
+            state = "OPEN"
+        elif state == "OPEN": 
+            print("Service is already up")
+        else:
+            print("Service is HALF OPEN")
+            await asyncio.sleep(1)
+            state = "CLOSED"
+
+    async def break_and_reset(self, no_of_requests, failure):
+        count = 0
+        for i in range(no_of_requests):
+            if count < failure:
+                print(f"Trying {i} time")
+                await self.service_circuit()
+                count += 1
+            else:
+                print(f"Cool down period Start, wait for {self.state_change_in}")
+                self.state = "OPEN"
+                await self.service_circuit()
+
+
+async def main():
+    web_service = CircuitBreaker("CLOSED", 10)
+    await web_service.service_circuit()
+    await web_service.break_and_reset(10, 3)
+
+asyncio.run(main())
