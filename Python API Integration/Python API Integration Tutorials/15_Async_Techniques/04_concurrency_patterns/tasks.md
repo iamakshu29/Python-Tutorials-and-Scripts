@@ -129,7 +129,7 @@
 ## Things to experiment with (break stuff on purpose)
 
   - Run a CPU-heavy loop inside an async function — watch it block other coroutines
-  - Move the CPU-heavy loop to asyncio.to_thread — watch others run freely
+  - Move the CPU-heavy loop to ProcessPoolExecutor (via loop.run_in_executor) — watch others run freely (true parallelism, bypasses GIL)
   - as_completed with httpbin delays: send requests with delays [3,1,2,1,3]
     — results should come back in order: 1,1,2,3,3 not 3,1,2,1,3
   - Build a token bucket with a very low refill rate and watch requests get throttled
