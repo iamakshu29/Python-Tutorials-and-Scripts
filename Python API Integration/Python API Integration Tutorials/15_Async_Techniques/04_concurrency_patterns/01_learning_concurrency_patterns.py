@@ -1,6 +1,5 @@
 import asyncio
 import time
-import concurrent.futures
 from concurrent.futures import ProcessPoolExecutor
 
 
@@ -107,7 +106,7 @@ async def demo_c3_parallel():
 
     start = time.perf_counter()
 
-    with concurrent.futures.ProcessPoolExecutor() as executor:
+    with ProcessPoolExecutor() as executor:
         await asyncio.gather(
             loop.run_in_executor(executor, cpu_heavy, 50_000_000),
             loop.run_in_executor(executor, cpu_heavy, 50_000_000),
@@ -263,6 +262,13 @@ async def demo_as_compelted():
 # ================================================================================
 # CONCEPT 6 — Rate limiting patterns
 # ================================================================================
+# Goal: limit how many operations run at once or in a time window.
+# Without limits: 1000 concurrent DB connections crash the DB, or 100 API calls/s get rate-limited.
+#
+# Three patterns covered:
+#   Semaphore      → concurrency limit (max N running simultaneously)
+#   Token Bucket   → rate over time (N requests per period, burst allowed up to bucket size)
+#   Counter+sleep  → simplest (send N, then pause before the next batch)
 
 # Pattern 1 — Semaphore
 # ================================================================================
@@ -273,12 +279,16 @@ def log(msg):
     print(f"{time.perf_counter() - start:.1f}s | {msg}")
 
 async def db_connect(semaphore,db):
+    # async with semaphore: blocks here if 3 connections are already active.
+    # Releases the slot on exit — next waiting task immediately gets in.
     async with semaphore:
         log(f"Querying {db}")
         await asyncio.sleep(3)
         log(f"Connected {db}")
 
 async def main():
+    # At most 3 db_connect calls run at the same time.
+    # With 8 DBs and Semaphore(3): first 3 start immediately, rest wait for a slot.
     semaphore = asyncio.Semaphore(3)
 
     db_pool = ["paymentDB","imageDB","cartDB","passwordDB","usernameDB","servicesDB","applicationsDB","middlewareDB"]
@@ -296,6 +306,8 @@ async def main():
 # ================================================================================
 
 async def refill_tokens(lock, token_count):
+    # Each call sleeps 2s then adds 1 token. Run N of these in parallel to create N tokens upfront.
+    # Lock prevents simultaneous writes to the shared token_count dict.
     await asyncio.sleep(2)
     async with lock:
         token_count["count"] += 1
@@ -305,6 +317,7 @@ async def hit_request(lock, token_count, req):
     await asyncio.sleep(1)
     try:
         async with lock:
+            # Consume 1 token if available. No token → raise ValueError → request rejected.
             if token_count["count"] > 0:
                 print("Request Sent successfully")
                 token_count["count"] -= 1
@@ -319,10 +332,12 @@ async def main():
     token_count = {"count": 0}
     token_to_create = 10
 
+    # Create 10 tokens upfront (all in parallel, each waits 2s). Finite supply.
     create_token = [asyncio.create_task(refill_tokens(lock,token_count)) for _ in range(token_to_create)]
 
     await asyncio.gather(*create_token)
     print("Token created",token_count["count"])
+    # 11 requests but only 10 tokens → last request gets rejected.
     sending_request = [asyncio.create_task(hit_request(lock,token_count,req)) for req in range(1,12)]
 
     await asyncio.gather(*sending_request)
@@ -336,10 +351,13 @@ async def main():
 # - Token will keep on increasing at rate for 1 sec. We are not awaiting the result as the tokens are creating as infinteloop. So let the tokens create in background only.
 
 async def refill_tokens_indefinitely(lock, token_count, token_to_create):
+    # Runs forever as a background task — adds 1 token/sec up to the bucket cap.
+    # Never awaited directly; spawned as a background task in main().
     while True:
         await asyncio.sleep(1)
 
         async with lock:
+            # Only refill if below capacity — bucket doesn't overflow.
             if token_count["count"] < token_to_create:
                 token_count["count"] += 1
 
@@ -348,12 +366,15 @@ async def hit_request_with_retry(lock, token_count, req):
     await asyncio.sleep(1)
     try:
         async with lock:
+            # First attempt: consume a token if one is available.
             if token_count["count"] > 0:
                 print("Request Sent successfully")
                 token_count["count"] -= 1
                 print(f"balance remaining: {token_count["count"]}")
+        # Wait 20s for the background refiller to replenish tokens before retrying.
         await asyncio.sleep(20)
         async with lock:
+            # Retry: tokens may have been refilled by now.
             print("Trying again")
             print(f"balance remaining: {token_count["count"]}")
             if token_count["count"] > 0:
@@ -389,12 +410,17 @@ async def task(i):
     print(f"task {i} ended")
 
 async def rate_limiting_sleep_pattern():
+    # Coarsest rate limit: send N tasks, then pause the whole flow before the next batch.
+    # Doesn't limit concurrency — all tasks in a batch run simultaneously.
+    # Used in project.py's as_completed loop to stay under 10 requests per interval.
     rate_limit = 3
-
     count = 0
     results = []
+
     for i in range(10):
         if count >= rate_limit:
+            # Hit the limit — pause before starting the next batch, then reset counter.
+            print("Rate limit engaging:")
             await asyncio.sleep(4)
             count = 0
         results.append(asyncio.create_task(task(i)))
@@ -412,20 +438,33 @@ async def main():
 # ================================================================================
 # CONCEPT 7 — Producer-consumer with backpressure
 # ================================================================================
-# Producer is faster than consumers → queue fills to maxsize=12 → await queue.put(i) blocks the producer — that's backpressure actually triggering.
+# Problem: producer generates work faster than consumers process it.
+# Without a bounded queue: producer keeps adding → memory grows unbounded.
+#
+# Fix: asyncio.Queue(maxsize=N) — when full, queue.put() automatically blocks
+# the producer until a consumer pulls an item. That blocking IS backpressure.
+#
+# Sentinel pattern: producer sends None after all real items to signal consumers to stop.
+# One None per consumer — each consumer exits when it receives it.
+#
+# queue.join() vs gather(*consumer_tasks):
+#   gather: waits for loop coroutines to return (not reliable — loops run forever until sentinel).
+#   queue.join(): waits until task_done() is called for every get() — correct.
 async def fast_producer(queue, num_of_msg, consumer_size):
     for i in range(num_of_msg):
         print(f"Producing {i}")
-        await queue.put(i)
+        await queue.put(i)   # blocks here if queue is full — backpressure in action
         await asyncio.sleep(1)
+    # Send one None sentinel per consumer so each knows when to exit its loop.
     for _ in range(consumer_size):
         await queue.put(None)
         
 
 async def slow_consumer(queue, consumer_name):
     while True:
-        msg = await queue.get()
+        msg = await queue.get()   # blocks until an item is available
         if msg is None:
+            # Sentinel received — mark done and exit. queue.join() counts this call.
             queue.task_done()
             print(f"Consumer {consumer_name} exiting")
             break
@@ -433,11 +472,12 @@ async def slow_consumer(queue, consumer_name):
             print(f"Consumer {consumer_name} Processing message {msg}")
             await asyncio.sleep(5)
             print(f"Message {msg} processed")
+            # MUST call task_done() for every get() — queue.join() waits for all of these.
             queue.task_done()
 
 
 async def main():
-    queue = asyncio.Queue(maxsize=12)
+    queue = asyncio.Queue(maxsize=12)  # bounded at 12 — triggers backpressure when full
     consumers = ["web","app"]
     num_of_msg = 20
 
@@ -452,6 +492,7 @@ async def main():
 # Instead of awaiting we use queue.join() method. as it also waits for all the message to get processed
 ## check 01_learning_asyncio_advanced.py -> queue section for better understanding
 
+    # queue.join() blocks until every item's task_done() has been called — all messages processed.
     await queue.join()
 
 

@@ -213,6 +213,22 @@ FULL PATTERN:
   NOTE: asyncio.to_thread shortcut does NOT work for ProcessPoolExecutor.
   You must use loop.run_in_executor() explicitly.
 
+================================================================================
+EXECUTOR FUNCTIONS MUST BE SYNC (plain def — NOT async def):
+  Both ProcessPoolExecutor and ThreadPoolExecutor work by CALLING a sync function in a worker (thread or process). 
+  If you pass an async def function, calling it just returns a coroutine object — no event loop exists in the worker to
+  run it. 
+  The coroutine is never executed and Python warns "coroutine was never awaited".
+
+  Rule:
+    ProcessPoolExecutor  → plain def  (sync)
+    ThreadPoolExecutor   → plain def  (sync)
+    asyncio.to_thread    → plain def  (sync)
+
+  run_in_executor / to_thread ARE the bridge FROM async land TO sync land.
+  The async side awaits; the sync function runs in the worker.
+================================================================================
+
 
 ================================================================================
 CONCEPT 4 — asyncio.gather vs asyncio.wait

@@ -175,15 +175,11 @@
     - Process and print results AS THEY COMPLETE (use as_completed)
     - Track: total requests, successful, failed, avg response time
     - If a request fails, retry once after 1 second
+    - Print a live progress counter: "Completed: 12/30"
 
-  Stretch goals:
+  Stretch goals: SKIPPED
     - Add a circuit breaker: after 3 consecutive failures to the same host, 
       stop trying for 30 seconds, then try once (half-open)
-    - One of your URLs should point to a "slow" httpbin endpoint —
-      use asyncio.to_thread to run a CPU-heavy operation (e.g., sha256 hashing)
-      on each response body without blocking the event loop
-    - Save all results to a JSON file as they arrive (not all at the end)
-    - Print a live progress counter: "Completed: 12/30"
 
   File to create: 04_concurrency_patterns/rate_limited_fetcher.py
 

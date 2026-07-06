@@ -73,6 +73,7 @@ async def external_service():
     # To test recovery: comment the raise above after the cooldown sleep in main()
 
 async def external_service_2():
+    # Healthy service — succeeds immediately. Simulates recovery after cooldown.
     await asyncio.sleep(0.1)
 
 
@@ -98,6 +99,7 @@ class CircuitBreaker:
         # CLOSED / HALF_OPEN: attempt the actual call
         try:
             await func()
+            # Success — reset everything. Even a HALF_OPEN probe success closes the circuit.
             print(f"  [CB] Service OK → state=CLOSED, failure_count reset")
             self.failure_count = 0
             self.state = "CLOSED"
@@ -106,7 +108,7 @@ class CircuitBreaker:
             if self.state == "HALF_OPEN" or self.failure_count >= self.failure_threshold:
                 reason = "Probe failed" if self.state == "HALF_OPEN" else f"Threshold hit ({self.failure_count}/{self.failure_threshold})"
                 self.state = "OPEN"
-                self.opened_at = asyncio.get_event_loop().time()
+                self.opened_at = asyncio.get_event_loop().time()  # timestamp used to measure cooldown elapsed time
                 print(f"  [CB] {reason} → state=OPEN, cooldown starts ({self.cooldown}s)")
             else:
                 print(f"  [CB] Failure {self.failure_count}/{self.failure_threshold} — state=CLOSED | {e}")
